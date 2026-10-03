@@ -1,0 +1,13 @@
+{
+  "status": "success",
+  "data": {
+    "status": "failure",
+    "statusCode": 412,
+    "statusDescription": "err_UnexpectedError_Business_Validation",
+    "details": [
+      {
+        "err_msg": "End Date should be greater than start date"
+      }
+    ]
+  }
+}

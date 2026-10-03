@@ -1,0 +1,22 @@
+{
+  "status": "success",
+  "data": {
+    "status": "failure",
+    "statusCode": 401,
+    "statusDescription": "err_nonTimeEmployee",
+    "details": [
+      {
+        "messages": [
+          {
+            "message": "err_nonTimeEmployee",
+            "severity": "ERROR",
+            "field": "positionId",
+            "values": [
+              "POS-0001"
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
