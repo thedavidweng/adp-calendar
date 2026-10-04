@@ -1,9 +1,11 @@
-import type { StateStore } from '@adp-calendar/core';
+import type { LastSuccess, StateStore, SyncHistory, SyncSummary } from '@adp-calendar/core';
 import type { TokenStore } from './google-auth.ts';
 
 export const POSITION_KEY = 'positionId';
 export const GOOGLE_ACCESS_TOKEN_KEY = 'googleAccessToken';
 export const GOOGLE_ACCESS_TOKEN_EXPIRES_KEY = 'googleAccessTokenExpiresAt';
+export const LAST_SUCCESS_AT_KEY = 'lastSuccessAt';
+export const LAST_SUCCESS_SUMMARY_KEY = 'lastSuccessSummary';
 
 export interface KeyValueStorage {
   get(keys: readonly string[]): Promise<Record<string, unknown>>;
@@ -24,6 +26,46 @@ export function createStoredState(storage: KeyValueStorage): StateStore {
       await storage.set({ [POSITION_KEY]: null });
     },
   };
+}
+
+export function createSyncHistory(storage: KeyValueStorage): SyncHistory {
+  return {
+    async getLastSuccess() {
+      const items = await storage.get([LAST_SUCCESS_AT_KEY, LAST_SUCCESS_SUMMARY_KEY]);
+      return parseLastSuccess(items[LAST_SUCCESS_AT_KEY], items[LAST_SUCCESS_SUMMARY_KEY]);
+    },
+    async setLastSuccess(record) {
+      await storage.set({
+        [LAST_SUCCESS_AT_KEY]: record.at,
+        [LAST_SUCCESS_SUMMARY_KEY]: record.summary,
+      });
+    },
+  };
+}
+
+export function parseLastSuccess(at: unknown, summary: unknown): LastSuccess | null {
+  if (typeof at !== 'string' || Number.isNaN(Date.parse(at)) || !isSummary(summary)) {
+    return null;
+  }
+  return {
+    at,
+    summary: {
+      created: summary.created,
+      updated: summary.updated,
+      restored: summary.restored,
+      deleted: summary.deleted,
+    },
+  };
+}
+
+function isSummary(value: unknown): value is SyncSummary {
+  if (typeof value !== 'object' || value === null) {
+    return false;
+  }
+  const record = value as Record<string, unknown>;
+  return (['created', 'updated', 'restored', 'deleted'] as const).every(
+    (key) => typeof record[key] === 'number' && Number.isFinite(record[key]),
+  );
 }
 
 export function createTokenStore(storage: KeyValueStorage): TokenStore {

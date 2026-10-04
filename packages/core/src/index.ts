@@ -13,6 +13,7 @@ export type {
   Clock,
   ExportInput,
   ExportResult,
+  LastSuccess,
   NewShiftCalendar,
   ShiftCalendar,
   ShiftCalendarEvent,
@@ -20,8 +21,10 @@ export type {
   ShiftCalendarRecord,
   ShiftCalendarWhen,
   StateStore,
+  SyncHistory,
   SyncInput,
   SyncResult,
+  SyncSummary,
 } from './ports.ts';
 export { addDays } from './schedule-range.ts';
-export { syncSchedule } from './sync-schedule.ts';
+export { syncIsDue, syncSchedule } from './sync-schedule.ts';

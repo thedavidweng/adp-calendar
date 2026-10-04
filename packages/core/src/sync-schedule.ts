@@ -1,25 +1,35 @@
-import type { ShiftCalendarEvent, ShiftCalendarWhen, SyncInput, SyncResult } from './ports.ts';
+import type { ShiftCalendarEvent, ShiftCalendarWhen, SyncInput, SyncResult, SyncSummary } from './ports.ts';
 import { SHIFT_CALENDAR_DESCRIPTION, SHIFT_CALENDAR_NAME, ShiftCalendarError } from './ports.ts';
 import { addDays, localToday, scheduleWindow } from './schedule-range.ts';
 import type { HolidayEvent, ShiftEvent } from './shifts.ts';
 import { parseShifts } from './shifts.ts';
 
 const ICS_SUFFIX = '@adp-schedule-export';
+const THREE_AND_A_HALF_DAYS_MS = 3.5 * 24 * 60 * 60 * 1000;
 
-interface SyncCounts {
-  created: number;
-  updated: number;
-  restored: number;
-  deleted: number;
+export function syncIsDue(lastSuccessAt: string | null, now: Date): boolean {
+  if (lastSuccessAt === null) {
+    return true;
+  }
+  const then = Date.parse(lastSuccessAt);
+  if (Number.isNaN(then)) {
+    return true;
+  }
+  return now.getTime() - then > THREE_AND_A_HALF_DAYS_MS;
 }
 
 export async function syncSchedule(input: SyncInput): Promise<SyncResult> {
+  const now = input.clock.now();
+  const last = await input.history.getLastSuccess();
+  if (!input.forced && !syncIsDue(last?.at ?? null, now)) {
+    return { ok: true, skipped: 'not-due' };
+  }
+
   const positionId = await input.state.getPositionId();
   if (!positionId) {
     return { ok: false, reason: 'no-position' };
   }
 
-  const now = input.clock.now();
   const today = localToday(now, input.timeZone);
   const range = scheduleWindow(now, input.timeZone);
   const fetched = await input.adp.fetchMonthlyView(positionId, range.startDate, range.endDate);
@@ -53,11 +63,18 @@ export async function syncSchedule(input: SyncInput): Promise<SyncResult> {
         private: true,
       }));
     const counts = await reconcile(input, calendar.id, today, range.endDate, desired);
+    const summary: SyncSummary = {
+      created: counts.created,
+      updated: counts.updated,
+      restored: counts.restored,
+      deleted: counts.deleted,
+    };
+    await input.history.setLastSuccess({ at: now.toISOString(), summary });
     return {
       ok: true,
       calendarId: calendar.id,
       createdCalendar: existing === null,
-      ...counts,
+      ...summary,
     };
   } catch (error) {
     if (error instanceof ShiftCalendarError) {
@@ -73,11 +90,11 @@ async function reconcile(
   today: string,
   endDate: string,
   desired: ShiftCalendarEvent[],
-): Promise<SyncCounts> {
+): Promise<SyncSummary> {
   const listed = await input.calendar.list(calendarId, { startDate: today, endDate, timeZone: input.timeZone });
   const wanted = new Map(desired.map((event) => [event.id, event]));
   const seen = new Set<string>();
-  const counts: SyncCounts = { created: 0, updated: 0, restored: 0, deleted: 0 };
+  const counts: SyncSummary = { created: 0, updated: 0, restored: 0, deleted: 0 };
 
   for (const event of listed) {
     if (startDate(event) < today) {

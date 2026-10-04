@@ -21,6 +21,24 @@ export interface StateStore {
   clearPositionId(): Promise<void>;
 }
 
+export interface SyncSummary {
+  created: number;
+  updated: number;
+  restored: number;
+  deleted: number;
+}
+
+/** Instant and change counts from the last Sync that succeeded. */
+export interface LastSuccess {
+  at: string;
+  summary: SyncSummary;
+}
+
+export interface SyncHistory {
+  getLastSuccess(): Promise<LastSuccess | null>;
+  setLastSuccess(record: LastSuccess): Promise<void>;
+}
+
 export type ExportResult =
   | { ok: true; ics: string; filename: string }
   | { ok: false; reason: 'no-position' }
@@ -104,6 +122,7 @@ export type SyncResult =
       restored: number;
       deleted: number;
     }
+  | { ok: true; skipped: 'not-due' }
   | { ok: false; reason: 'no-position' }
   | { ok: false; reason: 'session-dead' }
   | { ok: false; reason: 'no-schedule' }
@@ -118,4 +137,7 @@ export interface SyncInput {
   state: StateStore;
   timeZone: string;
   calendar: ShiftCalendar;
+  history: SyncHistory;
+  /** When true, run even if the last success is newer than 3.5 days. */
+  forced?: boolean;
 }

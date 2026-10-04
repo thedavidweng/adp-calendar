@@ -11,7 +11,11 @@ button {
   padding: 8px 12px;
 }
 
+#last-sync,
 #status {
   margin: 10px 0 0;
+}
+
+#status {
   min-height: 2.8em;
 }

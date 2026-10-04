@@ -69,5 +69,21 @@
   },
   "syncFailed": {
     "message": "Could not sync. Try again."
+  },
+  "notDue": {
+    "message": "A Sync is not due yet."
+  },
+  "noLastSync": {
+    "message": "No successful Sync yet."
+  },
+  "lastSync": {
+    "message": "Last successful Sync $WHEN$: $CREATED$ created, $UPDATED$ updated, $RESTORED$ restored, $DELETED$ deleted.",
+    "placeholders": {
+      "when": { "content": "$1" },
+      "created": { "content": "$2" },
+      "updated": { "content": "$3" },
+      "restored": { "content": "$4" },
+      "deleted": { "content": "$5" }
+    }
   }
 }

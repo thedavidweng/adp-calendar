@@ -1,22 +1,32 @@
-import type { AdpSource, ShiftCalendar, StateStore, SyncResult } from '@adp-calendar/core';
-import { syncSchedule } from '@adp-calendar/core/sync';
+import type { AdpSource, ShiftCalendar, StateStore, SyncHistory, SyncResult } from '@adp-calendar/core';
+import { syncIsDue, syncSchedule } from '@adp-calendar/core/sync';
 import { authorizeGoogle, type TokenStore } from './google-auth.ts';
 
-export async function runPopupSync(deps: {
+export async function runExtensionSync(deps: {
   clientId: string;
   redirectUri: string;
   now: () => Date;
   tokens: TokenStore;
   launch(url: string, interactive: boolean): Promise<string | null | undefined>;
   state: StateStore;
+  history: SyncHistory;
   adp: AdpSource;
   timeZone: string;
   openCalendar(accessToken: string): ShiftCalendar;
+  forced: boolean;
 }): Promise<SyncResult | { ok: false; reason: 'missing-client' }> {
+  const now = deps.now();
+  if (!deps.forced) {
+    const last = await deps.history.getLastSuccess();
+    if (!syncIsDue(last?.at ?? null, now)) {
+      return { ok: true, skipped: 'not-due' };
+    }
+  }
+
   const auth = await authorizeGoogle({
     clientId: deps.clientId,
     redirectUri: deps.redirectUri,
-    now: deps.now().getTime(),
+    now: now.getTime(),
     tokens: deps.tokens,
     launch: deps.launch,
   });
@@ -25,9 +35,11 @@ export async function runPopupSync(deps: {
   }
   return syncSchedule({
     adp: deps.adp,
-    clock: { now: deps.now },
+    clock: { now: () => now },
     state: deps.state,
     timeZone: deps.timeZone,
     calendar: deps.openCalendar(auth.accessToken),
+    history: deps.history,
+    forced: deps.forced,
   });
 }

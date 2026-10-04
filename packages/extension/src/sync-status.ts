@@ -1,4 +1,4 @@
-import type { SyncResult } from '@adp-calendar/core';
+import type { LastSuccess, SyncResult } from '@adp-calendar/core';
 
 export type PopupSyncResult = SyncResult | { ok: false; reason: 'missing-client' | 'sync-failed' };
 
@@ -32,7 +32,10 @@ export type MessageKey =
   | 'missingClient'
   | 'syncFailed'
   | 'syncing'
-  | 'syncNow';
+  | 'syncNow'
+  | 'notDue'
+  | 'lastSync'
+  | 'noLastSync';
 
 type Translator = (key: MessageKey, substitution?: string | string[]) => string;
 
@@ -60,8 +63,28 @@ export function isPopupSyncResult(value: unknown): value is PopupSyncResult {
   return FAILURES.has(record.reason);
 }
 
+export function lastSuccessText(
+  last: LastSuccess | null,
+  translate: Translator,
+  formatWhen: (at: string) => string,
+): string {
+  if (!last) {
+    return translate('noLastSync');
+  }
+  return translate('lastSync', [
+    formatWhen(last.at),
+    String(last.summary.created),
+    String(last.summary.updated),
+    String(last.summary.restored),
+    String(last.summary.deleted),
+  ]);
+}
+
 export function syncStatusText(result: PopupSyncResult, translate: Translator): string {
   if (result.ok) {
+    if (!('created' in result)) {
+      return translate('notDue');
+    }
     const counts = [String(result.created), String(result.updated), String(result.restored), String(result.deleted)];
     return translate(result.createdCalendar ? 'syncCreatedSummary' : 'syncSummary', counts);
   }

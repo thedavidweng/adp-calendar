@@ -9,11 +9,13 @@ import {
   ShiftCalendarError,
   syncSchedule,
   type AdpSource,
+  type LastSuccess,
   type ShiftCalendar,
   type ShiftCalendarEvent,
   type ShiftCalendarRange,
   type ShiftCalendarRecord,
   type StateStore,
+  type SyncHistory,
   type SyncInput,
 } from '../src/index.ts';
 
@@ -27,6 +29,9 @@ const noScheduleFixture: unknown = JSON.parse(
 
 const timeZone = 'America/Vancouver';
 const now = '2026-10-03T17:00:00.000Z';
+const threePointFourDaysMs = 293_760_000;
+const threeAndAHalfDaysMs = 302_400_000;
+const threePointSixDaysMs = 311_040_000;
 
 type StoredEvent = ShiftCalendarEvent & { status: 'confirmed' | 'cancelled' };
 type MemoryCalendar = ShiftCalendar & {
@@ -56,6 +61,17 @@ function source(body: unknown): AdpSource {
       return { kind: 'json', body };
     },
   };
+}
+
+function countingSource(body: unknown = octoberFixture): AdpSource & { calls: number } {
+  const adp = source(body) as AdpSource & { calls: number };
+  const fetchMonthlyView = adp.fetchMonthlyView.bind(adp);
+  adp.calls = 0;
+  adp.fetchMonthlyView = async (...args) => {
+    adp.calls += 1;
+    return fetchMonthlyView(...args);
+  };
+  return adp;
 }
 
 function memoryCalendar(): MemoryCalendar {
@@ -137,14 +153,36 @@ function whenStamp(when: ShiftCalendarEvent['start']): string {
   return 'date' in when ? `${when.date}T00:00:00` : when.dateTime;
 }
 
-function syncInput(calendar: ShiftCalendar, body: unknown = octoberFixture, instant = now): SyncInput {
+function memoryHistory(initial: LastSuccess | null = null): SyncHistory & { saved: LastSuccess | null } {
+  return {
+    saved: initial,
+    async getLastSuccess() {
+      return this.saved;
+    },
+    async setLastSuccess(record) {
+      this.saved = record;
+    },
+  };
+}
+
+function syncInput(
+  calendar: ShiftCalendar,
+  body: unknown = octoberFixture,
+  instant = now,
+  history: SyncHistory = memoryHistory(),
+): SyncInput {
   return {
     adp: source(body),
     clock: { now: () => new Date(instant) },
     state: memoryState('POS-0001'),
     timeZone,
     calendar,
+    history,
   };
+}
+
+function successAt(ageMs: number, summary: LastSuccess['summary'] = { created: 1, updated: 0, restored: 0, deleted: 0 }): LastSuccess {
+  return { at: new Date(Date.parse(now) - ageMs).toISOString(), summary };
 }
 
 function storedEvents(calendar: MemoryCalendar): StoredEvent[] {
@@ -178,6 +216,81 @@ describe('Shift Calendar fake', () => {
       calendar.list(created.id, { startDate: '2026-10-05', endDate: '2026-10-05', timeZone }),
     ).resolves.toEqual([{ ...shift, status: 'cancelled' }]);
     expect(calendar.conflicts).toBe(1);
+  });
+});
+
+describe('when a Sync is due', () => {
+  it('does nothing at 3.4 days or at exactly 3.5 days, and keeps the stored success', async () => {
+    for (const age of [threePointFourDaysMs, threeAndAHalfDaysMs]) {
+      const calendar = memoryCalendar();
+      const history = memoryHistory(successAt(age));
+      const adp = countingSource();
+      const result = await syncSchedule({ ...syncInput(calendar, octoberFixture, now, history), adp });
+
+      expect(result).toEqual({ ok: true, skipped: 'not-due' });
+      expect(adp.calls).toBe(0);
+      expect(calendar.writes).toEqual([]);
+      expect(history.saved).toEqual(successAt(age));
+    }
+  });
+
+  it('runs at 3.6 days and stores the new success only after ADP is reconciled', async () => {
+    const calendar = memoryCalendar();
+    const history = memoryHistory(successAt(threePointSixDaysMs));
+    const adp = countingSource();
+    const result = await syncSchedule({ ...syncInput(calendar, octoberFixture, now, history), adp });
+
+    expect(result).toMatchObject({ ok: true, created: 5 });
+    expect(adp.calls).toBe(1);
+    expect(history.saved).toEqual({
+      at: now,
+      summary: { created: 5, updated: 0, restored: 0, deleted: 0 },
+    });
+  });
+
+  it('always runs when forced, even 3.4 days after a success', async () => {
+    const calendar = memoryCalendar();
+    const history = memoryHistory(successAt(threePointFourDaysMs));
+    const adp = countingSource();
+    const result = await syncSchedule({
+      ...syncInput(calendar, octoberFixture, now, history),
+      adp,
+      forced: true,
+    });
+
+    expect(result).toMatchObject({ ok: true, created: 5 });
+    expect(adp.calls).toBe(1);
+    expect(history.saved?.at).toBe(now);
+  });
+
+  it('treats the first Sync as due and stores its instant and summary', async () => {
+    const calendar = memoryCalendar();
+    const history = memoryHistory(null);
+    const result = await syncSchedule(syncInput(calendar, octoberFixture, now, history));
+
+    expect(result).toMatchObject({ ok: true, createdCalendar: true, created: 5 });
+    expect(history.saved).toEqual({
+      at: now,
+      summary: { created: 5, updated: 0, restored: 0, deleted: 0 },
+    });
+  });
+
+  it('leaves the last success untouched when a due Sync fails', async () => {
+    const calendar = memoryCalendar();
+    const previous = successAt(threePointSixDaysMs, { created: 2, updated: 1, restored: 0, deleted: 3 });
+    const history = memoryHistory(previous);
+    const result = await syncSchedule({
+      ...syncInput(calendar, octoberFixture, now, history),
+      adp: {
+        async fetchMonthlyView() {
+          return { kind: 'redirected' };
+        },
+      },
+    });
+
+    expect(result).toEqual({ ok: false, reason: 'session-dead' });
+    expect(calendar.calendars).toEqual([]);
+    expect(history.saved).toEqual(previous);
   });
 });
 
