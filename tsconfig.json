@@ -19,6 +19,13 @@
     "packages/userscript/src",
     "packages/userscript/test",
     "packages/userscript/vite.config.ts",
+    "packages/extension/src",
+    "packages/extension/test",
     "vitest.config.ts"
+  ],
+  "exclude": [
+    "packages/extension/src/entrypoints",
+    "packages/extension/src/popup",
+    "packages/extension/src/browser"
   ]
 }

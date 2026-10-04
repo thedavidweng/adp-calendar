@@ -4,7 +4,11 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./adp-source": "./src/adp-source.ts",
+    "./ports": "./src/ports.ts",
+    "./position": "./src/position.ts",
+    "./sync": "./src/sync-schedule.ts"
   },
   "dependencies": {
     "ical-generator": "^11.1.2",

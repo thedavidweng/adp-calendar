@@ -1,0 +1,77 @@
+{
+  "extName": {
+    "message": "ADP Shifts"
+  },
+  "extDescription": {
+    "message": "Sync the signed-in ADP Workforce Now schedule to Google Calendar."
+  },
+  "syncNow": {
+    "message": "Sync now"
+  },
+  "syncing": {
+    "message": "Syncing…"
+  },
+  "syncCreatedOne": {
+    "message": "Created ADP Shifts and added 1 shift."
+  },
+  "syncCreatedMany": {
+    "message": "Created ADP Shifts and added $COUNT$ shifts.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "syncAddedOne": {
+    "message": "Added 1 shift to ADP Shifts."
+  },
+  "syncAddedMany": {
+    "message": "Added $COUNT$ shifts to ADP Shifts.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "noPosition": {
+    "message": "Open My Schedule once so the extension can learn your Position."
+  },
+  "sessionDead": {
+    "message": "Sign in to ADP, then try Sync now again."
+  },
+  "noSchedule": {
+    "message": "No schedule for this period yet."
+  },
+  "positionInvalid": {
+    "message": "Open My Schedule again so the extension can learn your Position."
+  },
+  "shapeDrift": {
+    "message": "ADP changed its data format. Nothing was changed."
+  },
+  "adpError": {
+    "message": "ADP could not return the schedule: $DETAIL$.",
+    "placeholders": {
+      "detail": {
+        "content": "$1"
+      }
+    }
+  },
+  "googleAuth": {
+    "message": "Google access was denied or has expired. Try Sync now again."
+  },
+  "calendarMissing": {
+    "message": "The Shift Calendar is missing. Try Sync now again."
+  },
+  "conflict": {
+    "message": "Google already has one of these Shifts."
+  },
+  "googleError": {
+    "message": "Google Calendar could not be updated."
+  },
+  "missingClient": {
+    "message": "Google sign-in is not configured yet."
+  },
+  "syncFailed": {
+    "message": "Could not sync. Try again."
+  }
+}

@@ -1,6 +1,23 @@
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as const;
 
+export function localToday(now: Date, timeZone: string): string {
+  return zonedParts(now, timeZone).today;
+}
+
 export function scheduleWindow(now: Date, timeZone: string): { startDate: string; endDate: string } {
+  const { today, weekday } = zonedParts(now, timeZone);
+  const weekdayIndex = WEEKDAYS.indexOf(weekday as (typeof WEEKDAYS)[number]);
+  if (weekdayIndex < 0) {
+    throw new Error(`Unexpected weekday ${weekday}`);
+  }
+
+  return {
+    startDate: addDays(today, -weekdayIndex),
+    endDate: addDays(today, 90),
+  };
+}
+
+function zonedParts(now: Date, timeZone: string): { today: string; weekday: string } {
   const parts = new Intl.DateTimeFormat('en-US', {
     timeZone,
     weekday: 'short',
@@ -16,17 +33,7 @@ export function scheduleWindow(now: Date, timeZone: string): { startDate: string
   if (!year || !month || !day || !weekday) {
     throw new Error('Could not read the clock in the configured time zone');
   }
-
-  const today = `${year}-${month}-${day}`;
-  const weekdayIndex = WEEKDAYS.indexOf(weekday as (typeof WEEKDAYS)[number]);
-  if (weekdayIndex < 0) {
-    throw new Error(`Unexpected weekday ${weekday}`);
-  }
-
-  return {
-    startDate: addDays(today, -weekdayIndex),
-    endDate: addDays(today, 90),
-  };
+  return { today: `${year}-${month}-${day}`, weekday };
 }
 
 export function addDays(isoDate: string, days: number): string {

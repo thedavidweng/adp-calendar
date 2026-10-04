@@ -1,0 +1,19 @@
+{
+  "name": "@adp-calendar/extension",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "wxt build",
+    "dev": "wxt",
+    "typecheck": "wxt prepare && tsc --noEmit -p .wxt/tsconfig.json"
+  },
+  "dependencies": {
+    "@adp-calendar/core": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^7.0.2",
+    "vite": "^8.3.2",
+    "wxt": "0.21.4"
+  }
+}

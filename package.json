@@ -8,9 +8,10 @@
   },
   "scripts": {
     "test": "vitest run",
-    "typecheck": "tsc --noEmit",
-    "type-check": "tsc --noEmit",
-    "build": "pnpm --filter @adp-calendar/userscript build"
+    "typecheck": "tsc --noEmit && pnpm --filter @adp-calendar/extension typecheck",
+    "type-check": "tsc --noEmit && pnpm --filter @adp-calendar/extension typecheck",
+    "build": "pnpm -r --if-present build",
+    "build:extension": "pnpm --filter @adp-calendar/extension build"
   },
   "devDependencies": {
     "@types/node": "^24.9.1",
