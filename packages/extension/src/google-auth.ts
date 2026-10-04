@@ -11,6 +11,7 @@ export interface StoredGoogleToken {
 export interface TokenStore {
   load(): Promise<StoredGoogleToken | null>;
   save(token: StoredGoogleToken): Promise<void>;
+  clear(): Promise<void>;
 }
 
 export function buildAuthUrl(input: { clientId: string; redirectUri: string; interactive: boolean }): string {

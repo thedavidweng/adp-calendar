@@ -19,3 +19,7 @@ button {
 #status {
   min-height: 2.8em;
 }
+
+#status a {
+  color: #0b57d0;
+}

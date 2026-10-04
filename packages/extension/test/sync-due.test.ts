@@ -149,7 +149,7 @@ describe('Sync triggers', () => {
       clientId: 'client.apps.googleusercontent.com',
       redirectUri: 'https://abcdefghijklmnop.chromiumapp.org/',
       now: () => new Date(now),
-      tokens: { async load() { return null; }, async save() {} },
+      tokens: { async load() { return null; }, async save() {}, async clear() {} },
       launch() {
         launches += 1;
         return Promise.resolve(null);
@@ -180,7 +180,7 @@ describe('Sync triggers', () => {
       clientId: 'client.apps.googleusercontent.com',
       redirectUri: 'https://abcdefghijklmnop.chromiumapp.org/',
       now: () => new Date(now),
-      tokens: { async load() { return null; }, async save() {} },
+      tokens: { async load() { return null; }, async save() {}, async clear() {} },
       launch() {
         launches += 1;
         return Promise.resolve(null);

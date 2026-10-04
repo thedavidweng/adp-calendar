@@ -34,7 +34,7 @@ export async function runExtensionSync(deps: {
   if (!auth.ok) {
     return auth;
   }
-  return syncSchedule({
+  const result = await syncSchedule({
     adp: deps.adp,
     clock: { now: () => now },
     state: deps.state,
@@ -44,4 +44,8 @@ export async function runExtensionSync(deps: {
     diagnostics: deps.diagnostics,
     forced: deps.forced,
   });
+  if (!result.ok && result.reason === 'google-auth') {
+    await deps.tokens.clear();
+  }
+  return result;
 }

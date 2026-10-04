@@ -1,7 +1,15 @@
 import { browser } from 'wxt/browser';
 import { extensionStorage } from '../browser/extension-storage.ts';
 import { createSyncHistory } from '../storage.ts';
-import { lastSuccessText, isPopupSyncResult, syncStatusText, type MessageKey, type PopupSyncResult } from '../sync-status.ts';
+import {
+  lastSuccessText,
+  isPopupSyncResult,
+  REPORT_ISSUE_URL,
+  showsReportIssue,
+  syncStatusText,
+  type MessageKey,
+  type PopupSyncResult,
+} from '../sync-status.ts';
 import { SYNC_NOW_MESSAGE } from '../sync-trigger.ts';
 
 const button = document.querySelector('#sync');
@@ -26,6 +34,21 @@ const showLastSuccess = async (): Promise<void> => {
   lastSync.textContent = lastSuccessText(recorded, translate, formatWhen);
 };
 
+const renderStatus = (result: PopupSyncResult): void => {
+  status.textContent = syncStatusText(result, translate);
+  if (!showsReportIssue(result)) {
+    return;
+  }
+  const link = document.createElement('a');
+  link.href = REPORT_ISSUE_URL;
+  link.textContent = translate('reportIssue');
+  link.addEventListener('click', (event) => {
+    event.preventDefault();
+    void browser.tabs.create({ url: REPORT_ISSUE_URL });
+  });
+  status.append(document.createTextNode(' '), link);
+};
+
 button.textContent = translate('syncNow');
 void showLastSuccess();
 button.addEventListener('click', () => {
@@ -34,7 +57,7 @@ button.addEventListener('click', () => {
   void browser.runtime
     .sendMessage({ type: SYNC_NOW_MESSAGE })
     .then((result: unknown) => {
-      status.textContent = syncStatusText(isPopupSyncResult(result) ? result : failed(), translate);
+      renderStatus(isPopupSyncResult(result) ? result : failed());
     })
     .catch(() => {
       status.textContent = syncStatusText(failed(), translate);

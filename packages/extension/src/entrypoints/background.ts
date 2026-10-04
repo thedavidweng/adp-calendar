@@ -3,9 +3,10 @@ import { browser } from 'wxt/browser';
 import { defineBackground } from 'wxt/utils/define-background';
 import { extensionStorage } from '../browser/extension-storage.ts';
 import { createGoogleShiftCalendar } from '../google-calendar.ts';
-import { openSignInFromNotification, reauthSyncRequest, SIGN_IN_NOTIFICATION_ID } from '../reauth.ts';
+import { ADP_SIGN_IN_URL, openSignInFromNotification, reauthSyncRequest } from '../reauth.ts';
 import { runExtensionSync } from '../run-sync.ts';
 import { createReauthTabs, createStoredState, createSyncDiagnostics, createSyncHistory, createTokenStore } from '../storage.ts';
+import { noticeForClick, noticeForSyncResult, REPORT_ISSUE_URL } from '../sync-status.ts';
 import { createSyncQueue, ensureDailySyncAlarm, syncRequestFor } from '../sync-trigger.ts';
 
 export default defineBackground(() => {
@@ -21,7 +22,7 @@ export default defineBackground(() => {
     if (!request) {
       return;
     }
-    void enqueue(() => runExtensionSync(syncDeps(request.forced)).then(notifyIfNeedsSignIn)).catch(() => undefined);
+    void enqueue(() => runExtensionSync(syncDeps(request.forced)).then(notifyOutcome)).catch(() => undefined);
   });
 
   browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
@@ -46,18 +47,32 @@ export default defineBackground(() => {
   });
 
   browser.notifications.onClicked.addListener((notificationId) => {
-    void openSignInFromNotification(notificationId, {
-      async createTab(url) {
-        const tab = await browser.tabs.create({ url });
-        if (typeof tab.id !== 'number') {
-          throw new Error('missing tab id');
-        }
-        return tab.id;
-      },
-      rememberTab(tabId) {
-        return createReauthTabs(extensionStorage()).set(tabId);
-      },
-    });
+    const notice = noticeForClick(notificationId);
+    if (!notice) {
+      return;
+    }
+    if (notice.click === 'remember-sign-in') {
+      void openSignInFromNotification(notificationId, {
+        async createTab(url) {
+          const tab = await browser.tabs.create({ url });
+          if (typeof tab.id !== 'number') {
+            throw new Error('missing tab id');
+          }
+          return tab.id;
+        },
+        rememberTab(tabId) {
+          return createReauthTabs(extensionStorage()).set(tabId);
+        },
+      });
+      return;
+    }
+    if (notice.click === 'open-workforce') {
+      void browser.tabs.create({ url: ADP_SIGN_IN_URL });
+      return;
+    }
+    if (notice.click === 'report-issue') {
+      void browser.tabs.create({ url: REPORT_ISSUE_URL });
+    }
   });
 });
 
@@ -68,20 +83,21 @@ async function runSignaledSync(request: { forced: boolean }, senderTabId: number
     await tabs.clear();
   }
   const result = await runExtensionSync(syncDeps(decision?.forced ?? request.forced));
-  await notifyIfNeedsSignIn(result);
+  await notifyOutcome(result);
   return result;
 }
 
-async function notifyIfNeedsSignIn(result: { ok: boolean; reason?: string }): Promise<void> {
-  if (result.ok || result.reason !== 'needs-sign-in') {
+async function notifyOutcome(result: { ok: boolean; reason?: string }): Promise<void> {
+  const notice = noticeForSyncResult(result);
+  if (!notice) {
     return;
   }
   try {
-    await browser.notifications.create(SIGN_IN_NOTIFICATION_ID, {
+    await browser.notifications.create(notice.id, {
       type: 'basic',
       iconUrl: browser.runtime.getURL('/icon.png'),
       title: browser.i18n.getMessage('extName'),
-      message: browser.i18n.getMessage('needsSignIn'),
+      message: browser.i18n.getMessage(notice.messageKey),
     });
   } catch {
     // The Sync outcome is already decided. A notification failure must not hide it.

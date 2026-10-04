@@ -18,6 +18,9 @@ function memoryTokens(initial?: { accessToken: string; expiresAt: number }): Tok
       current = token;
       saved.push(token);
     },
+    async clear() {
+      current = null;
+    },
   };
 }
 

@@ -28,6 +28,17 @@ const octoberFixture: unknown = JSON.parse(
 const noScheduleFixture: unknown = JSON.parse(
   readFileSync(resolve(fixtureDir, 'monthlyview-non-time-employee.redacted.json'), 'utf8'),
 );
+const adpErrorFixture: unknown = JSON.parse(
+  readFileSync(resolve(fixtureDir, 'monthlyview-inverted-range.redacted.json'), 'utf8'),
+);
+const positionInvalidBody = {
+  data: {
+    status: 'failure',
+    statusCode: 400,
+    statusDescription: 'err_InvalidRequest',
+    details: [{ messages: [{ message: 'The position is not valid', field: 'positionId' }] }],
+  },
+};
 
 const timeZone = 'America/Vancouver';
 const now = '2026-10-03T17:00:00.000Z';
@@ -79,6 +90,7 @@ function countingSource(body: unknown = octoberFixture): AdpSource & { calls: nu
 function memoryCalendar(): MemoryCalendar {
   const calendars: MemoryCalendar['calendars'] = [];
   const writes: MemoryCalendar['writes'] = [];
+  let nextId = 1;
   const calendar: MemoryCalendar = {
     calendars,
     writes,
@@ -87,7 +99,8 @@ function memoryCalendar(): MemoryCalendar {
       return calendars.find((item) => item.name === name) ?? null;
     },
     async create(input) {
-      const created = { id: `cal-${calendars.length + 1}`, events: [], ...input };
+      const created = { id: `cal-${nextId}`, events: [], ...input };
+      nextId += 1;
       calendars.push(created);
       return created;
     },
@@ -706,6 +719,117 @@ describe('ADP Session re-auth', () => {
     expect(attempts.some((attempt) => attempt.outcome === 'needs-sign-in')).toBe(false);
   });
 });
+
+describe('other Sync outcomes', () => {
+  it('does not write the Shift Calendar for no schedule, an invalid Position, shape drift, or any other ADP error', async () => {
+    const drifted = structuredClone(octoberFixture) as {
+      data: { details: Array<Record<string, unknown>> };
+    };
+    delete drifted.data.details[0]?.shiftDefinitions;
+    const cases: Array<{ body: unknown; reason: 'no-schedule' | 'position-invalid' | 'shape-drift' | 'adp-error' }> = [
+      { body: noScheduleFixture, reason: 'no-schedule' },
+      { body: positionInvalidBody, reason: 'position-invalid' },
+      { body: drifted, reason: 'shape-drift' },
+      { body: adpErrorFixture, reason: 'adp-error' },
+    ];
+
+    for (const item of cases) {
+      const tracked = trackedState('POS-0001');
+      const result = await syncSchedule({
+        ...syncInput(throwingCalendar(), item.body),
+        state: tracked.state,
+      });
+      expect(result).toMatchObject({ ok: false, reason: item.reason });
+      expect(tracked.position()).toBe(item.reason === 'position-invalid' ? null : 'POS-0001');
+    }
+  });
+
+  it('returns google-auth and does not write when the fake Shift Calendar revokes access', async () => {
+    const calendar = memoryCalendar();
+    await syncSchedule(syncInput(calendar));
+    const before = JSON.stringify(storedEvents(calendar));
+    calendar.writes.length = 0;
+
+    const result = await syncSchedule(syncInput(rejectingCalendar(calendar, 'google-auth')));
+
+    expect(result).toEqual({ ok: false, reason: 'google-auth' });
+    expect(calendar.writes).toEqual([]);
+    expect(JSON.stringify(storedEvents(calendar))).toBe(before);
+  });
+
+  it('returns calendar-missing when the fake Shift Calendar reports that id gone, without writing', async () => {
+    const calendar = memoryCalendar();
+    await syncSchedule(syncInput(calendar));
+    const before = JSON.stringify(storedEvents(calendar));
+    calendar.writes.length = 0;
+
+    const result = await syncSchedule(syncInput(rejectingCalendar(calendar, 'calendar-missing')));
+
+    expect(result).toEqual({ ok: false, reason: 'calendar-missing' });
+    expect(calendar.writes).toEqual([]);
+    expect(JSON.stringify(storedEvents(calendar))).toBe(before);
+  });
+
+  it('recreates a Shift Calendar the user deleted and inserts events on the next Sync', async () => {
+    const calendar = memoryCalendar();
+    await syncSchedule(syncInput(calendar));
+    const previousId = calendar.calendars[0]?.id;
+    calendar.calendars.length = 0;
+    calendar.writes.length = 0;
+
+    const result = await syncSchedule(syncInput(calendar));
+
+    expect(result).toMatchObject({ ok: true, createdCalendar: true, created: 5, updated: 0, restored: 0, deleted: 0 });
+    expect(calendar.calendars).toHaveLength(1);
+    expect(calendar.calendars[0]?.id).not.toBe(previousId);
+    expect(calendar.writes.length).toBeGreaterThan(0);
+    expect(calendar.writes.every((write) => write.op === 'insert')).toBe(true);
+  });
+});
+
+function trackedState(initial: string | null): { state: StateStore; position: () => string | null } {
+  let positionId = initial;
+  return {
+    state: {
+      async getPositionId() {
+        return positionId;
+      },
+      async setPositionId(next) {
+        positionId = next;
+      },
+      async clearPositionId() {
+        positionId = null;
+      },
+    },
+    position: () => positionId,
+  };
+}
+
+function rejectingCalendar(inner: MemoryCalendar, reason: 'google-auth' | 'calendar-missing'): ShiftCalendar {
+  const reject = (): never => {
+    throw new ShiftCalendarError(reason);
+  };
+  return {
+    findByName: async () => reject(),
+    create: async () => {
+      inner.writes.push({ op: 'insert', id: 'calendar' });
+      return reject();
+    },
+    list: async () => reject(),
+    insert: async (_calendarId, event) => {
+      inner.writes.push({ op: 'insert', id: event.id });
+      reject();
+    },
+    update: async (_calendarId, event) => {
+      inner.writes.push({ op: 'update', id: event.id });
+      reject();
+    },
+    delete: async (_calendarId, eventId) => {
+      inner.writes.push({ op: 'delete', id: eventId });
+      reject();
+    },
+  };
+}
 
 function throwingCalendar(): ShiftCalendar {
   const fail = () => {

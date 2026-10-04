@@ -47,6 +47,9 @@
   "shapeDrift": {
     "message": "ADP changed its data format. Nothing was changed."
   },
+  "reportIssue": {
+    "message": "Report an issue"
+  },
   "adpError": {
     "message": "ADP could not return the schedule: $DETAIL$.",
     "placeholders": {
@@ -56,7 +59,7 @@
     }
   },
   "googleAuth": {
-    "message": "Google access was denied or has expired. Try Sync now again."
+    "message": "Google access was revoked. Use Sync now to reconnect Google."
   },
   "calendarMissing": {
     "message": "The Shift Calendar is missing. Try Sync now again."

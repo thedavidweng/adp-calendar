@@ -160,5 +160,11 @@ export function createTokenStore(storage: KeyValueStorage): TokenStore {
         [GOOGLE_ACCESS_TOKEN_EXPIRES_KEY]: token.expiresAt,
       });
     },
+    async clear() {
+      await storage.set({
+        [GOOGLE_ACCESS_TOKEN_KEY]: null,
+        [GOOGLE_ACCESS_TOKEN_EXPIRES_KEY]: null,
+      });
+    },
   };
 }

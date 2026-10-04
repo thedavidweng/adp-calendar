@@ -1,6 +1,24 @@
 import type { LastSuccess, SyncResult } from '@adp-calendar/core';
+import { SIGN_IN_NOTIFICATION_ID } from './reauth.ts';
 
 export type PopupSyncResult = SyncResult | { ok: false; reason: 'missing-client' | 'sync-failed' };
+
+export const REPORT_ISSUE_URL = 'https://github.com/thedavidweng/adp-calendar/issues/new';
+
+export type NoticeClick = 'remember-sign-in' | 'open-workforce' | 'report-issue';
+
+export interface SyncNotice {
+  id: string;
+  messageKey: MessageKey;
+  click: NoticeClick | null;
+}
+
+const NOTICES: readonly (SyncNotice & { reason: string })[] = [
+  { reason: 'needs-sign-in', id: SIGN_IN_NOTIFICATION_ID, messageKey: 'needsSignIn', click: 'remember-sign-in' },
+  { reason: 'position-invalid', id: 'adp-position-invalid', messageKey: 'positionInvalid', click: 'open-workforce' },
+  { reason: 'shape-drift', id: 'adp-shape-drift', messageKey: 'shapeDrift', click: 'report-issue' },
+  { reason: 'google-auth', id: 'adp-google-auth', messageKey: 'googleAuth', click: null },
+];
 
 const FAILURES = new Set([
   'no-position',
@@ -33,6 +51,7 @@ export type MessageKey =
   | 'googleError'
   | 'missingClient'
   | 'syncFailed'
+  | 'reportIssue'
   | 'syncing'
   | 'syncNow'
   | 'notDue'
@@ -40,6 +59,29 @@ export type MessageKey =
   | 'noLastSync';
 
 type Translator = (key: MessageKey, substitution?: string | string[]) => string;
+
+export function showsReportIssue(result: PopupSyncResult): boolean {
+  return !result.ok && result.reason === 'shape-drift';
+}
+
+export function noticeForSyncResult(result: { ok: boolean; reason?: string }): SyncNotice | null {
+  if (result.ok || !result.reason) {
+    return null;
+  }
+  const notice = NOTICES.find((item) => item.reason === result.reason);
+  if (!notice) {
+    return null;
+  }
+  return { id: notice.id, messageKey: notice.messageKey, click: notice.click };
+}
+
+export function noticeForClick(notificationId: string): SyncNotice | null {
+  const notice = NOTICES.find((item) => item.id === notificationId);
+  if (!notice) {
+    return null;
+  }
+  return { id: notice.id, messageKey: notice.messageKey, click: notice.click };
+}
 
 export function isPopupSyncResult(value: unknown): value is PopupSyncResult {
   if (typeof value !== 'object' || value === null) {
