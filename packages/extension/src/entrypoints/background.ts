@@ -2,9 +2,12 @@ import { createPageAdpSource } from '@adp-calendar/core/adp-source';
 import { browser } from 'wxt/browser';
 import { defineBackground } from 'wxt/utils/define-background';
 import { extensionStorage } from '../browser/extension-storage.ts';
+import { authorizeGoogle } from '../google-auth.ts';
 import { createGoogleShiftCalendar } from '../google-calendar.ts';
+import { extensionCommand, ONBOARDING_PAGE } from '../onboarding.ts';
 import { ADP_SIGN_IN_URL, openSignInFromNotification, reauthSyncRequest } from '../reauth.ts';
 import { runExtensionSync } from '../run-sync.ts';
+import { maybeOpenInstallPage, timeZoneForSync } from '../settings.ts';
 import { createReauthTabs, createStoredState, createSyncDiagnostics, createSyncHistory, createTokenStore } from '../storage.ts';
 import { noticeForClick, noticeForSyncResult, REPORT_ISSUE_URL } from '../sync-status.ts';
 import { createSyncQueue, ensureDailySyncAlarm, syncRequestFor } from '../sync-trigger.ts';
@@ -12,6 +15,15 @@ import { createSyncQueue, ensureDailySyncAlarm, syncRequestFor } from '../sync-t
 export default defineBackground(() => {
   const enqueue = createSyncQueue();
   void ensureDailySyncAlarm(browser.alarms);
+  browser.runtime.onInstalled.addListener((details) => {
+    void maybeOpenInstallPage(details.reason, {
+      storage: extensionStorage(),
+      pageUrl: browser.runtime.getURL(ONBOARDING_PAGE),
+      open(url) {
+        return browser.tabs.create({ url });
+      },
+    });
+  });
   // Tab ids do not survive a browser restart, and a reused id must not force Sync.
   browser.runtime.onStartup.addListener(() => {
     void createReauthTabs(extensionStorage()).clear();
@@ -22,14 +34,23 @@ export default defineBackground(() => {
     if (!request) {
       return;
     }
-    void enqueue(() => runExtensionSync(syncDeps(request.forced)).then(notifyOutcome)).catch(() => undefined);
+    void enqueue(() => syncDeps(request.forced).then((deps) => runExtensionSync(deps)).then(notifyOutcome)).catch(
+      () => undefined,
+    );
   });
 
   browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    const request = syncRequestFor({ message });
-    if (!request) {
+    const command = extensionCommand(message);
+    if (!command) {
       return;
     }
+    if (command.type === 'connect-google') {
+      void enqueue(() => connectGoogle()).then(sendResponse, () => {
+        sendResponse({ ok: false, reason: 'google-auth' });
+      });
+      return true;
+    }
+    const request = { forced: command.forced };
     const pending = enqueue(() => runSignaledSync(request, sender.tab?.id));
     if (!request.forced) {
       void pending.catch(() => undefined);
@@ -82,7 +103,7 @@ async function runSignaledSync(request: { forced: boolean }, senderTabId: number
   if (decision?.clearReauthTab) {
     await tabs.clear();
   }
-  const result = await runExtensionSync(syncDeps(decision?.forced ?? request.forced));
+  const result = await runExtensionSync(await syncDeps(decision?.forced ?? request.forced));
   await notifyOutcome(result);
   return result;
 }
@@ -104,15 +125,29 @@ async function notifyOutcome(result: { ok: boolean; reason?: string }): Promise<
   }
 }
 
-function syncDeps(forced: boolean) {
+async function connectGoogle() {
+  const storage = extensionStorage();
+  return authorizeGoogle({
+    ...googleSession(storage),
+    now: Date.now(),
+  });
+}
+
+function googleSession(storage: ReturnType<typeof extensionStorage>) {
+  return {
+    clientId: googleClientId(),
+    redirectUri: browser.identity.getRedirectURL(),
+    tokens: createTokenStore(storage),
+    launch: (url: string, interactive: boolean) => browser.identity.launchWebAuthFlow({ url, interactive }),
+  };
+}
+
+async function syncDeps(forced: boolean) {
   const storage = extensionStorage();
   return {
     forced,
-    clientId: googleClientId(),
-    redirectUri: browser.identity.getRedirectURL(),
+    ...googleSession(storage),
     now: () => new Date(),
-    tokens: createTokenStore(storage),
-    launch: (url: string, interactive: boolean) => browser.identity.launchWebAuthFlow({ url, interactive }),
     state: createStoredState(storage),
     history: createSyncHistory(storage),
     diagnostics: createSyncDiagnostics(storage),
@@ -120,7 +155,7 @@ function syncDeps(forced: boolean) {
       const response = await fetch(url, { credentials: 'include' });
       return { redirected: response.redirected, url: response.url, text: await response.text() };
     }),
-    timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    timeZone: await timeZoneForSync(storage, Intl.DateTimeFormat().resolvedOptions().timeZone),
     openCalendar: (accessToken: string) => createGoogleShiftCalendar(fetch, accessToken),
   };
 }

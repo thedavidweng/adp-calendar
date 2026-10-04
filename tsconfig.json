@@ -26,6 +26,7 @@
   "exclude": [
     "packages/extension/src/entrypoints",
     "packages/extension/src/popup",
+    "packages/extension/src/onboarding",
     "packages/extension/src/browser"
   ]
 }

@@ -10,12 +10,19 @@ import {
   type MessageKey,
   type PopupSyncResult,
 } from '../sync-status.ts';
+import { ONBOARDING_PAGE } from '../onboarding.ts';
 import { SYNC_NOW_MESSAGE } from '../sync-trigger.ts';
 
 const button = document.querySelector('#sync');
 const status = document.querySelector('#status');
 const lastSync = document.querySelector('#last-sync');
-if (!(button instanceof HTMLButtonElement) || !(status instanceof HTMLElement) || !(lastSync instanceof HTMLElement)) {
+const settings = document.querySelector('#settings');
+if (
+  !(button instanceof HTMLButtonElement) ||
+  !(status instanceof HTMLElement) ||
+  !(lastSync instanceof HTMLElement) ||
+  !(settings instanceof HTMLButtonElement)
+) {
   throw new Error('Sync popup is missing its controls');
 }
 
@@ -50,6 +57,10 @@ const renderStatus = (result: PopupSyncResult): void => {
 };
 
 button.textContent = translate('syncNow');
+settings.textContent = translate('settings');
+settings.addEventListener('click', () => {
+  void browser.tabs.create({ url: browser.runtime.getURL(ONBOARDING_PAGE) });
+});
 void showLastSuccess();
 button.addEventListener('click', () => {
   button.disabled = true;

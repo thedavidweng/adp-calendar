@@ -56,7 +56,8 @@ export type MessageKey =
   | 'syncNow'
   | 'notDue'
   | 'lastSync'
-  | 'noLastSync';
+  | 'noLastSync'
+  | 'settings';
 
 type Translator = (key: MessageKey, substitution?: string | string[]) => string;
 

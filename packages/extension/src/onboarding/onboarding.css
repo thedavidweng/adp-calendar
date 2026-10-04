@@ -1,0 +1,76 @@
+body {
+  margin: 0;
+  padding: 24px 16px 48px;
+  font: 16px/1.45 system-ui, sans-serif;
+  color: #1a1a1a;
+  background: #fff;
+}
+
+main {
+  max-width: 40rem;
+  margin: 0 auto;
+}
+
+h1 {
+  margin: 0 0 16px;
+  font-size: 1.5rem;
+}
+
+h2 {
+  margin: 0 0 8px;
+  font-size: 1.05rem;
+}
+
+ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 12px;
+}
+
+li,
+section {
+  padding: 16px;
+  border: 1px solid #dadce0;
+  border-radius: 8px;
+}
+
+li[aria-current='step'] {
+  border-color: #0b57d0;
+}
+
+p {
+  margin: 8px 0 0;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+button {
+  margin-top: 12px;
+  padding: 8px 12px;
+}
+
+input {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: 8px;
+  padding: 8px;
+}
+
+label {
+  display: block;
+  margin-top: 4px;
+}
+
+section {
+  margin-top: 16px;
+}
+
+#disconnect {
+  margin-top: 16px;
+}

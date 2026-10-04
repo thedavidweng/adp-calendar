@@ -14,6 +14,10 @@ export default defineConfig({
       128: 'icon.png',
     },
     // Plain fetch to Calendar REST needs Google's host. ADP cookies stay in the browser.
-    host_permissions: ['https://workforcenow.adp.com/*', 'https://www.googleapis.com/*'],
+    host_permissions: [
+      'https://workforcenow.adp.com/*',
+      'https://www.googleapis.com/*',
+      'https://oauth2.googleapis.com/*',
+    ],
   },
 });

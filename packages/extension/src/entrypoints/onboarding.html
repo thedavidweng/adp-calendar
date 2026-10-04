@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>__MSG_onboardingTitle__</title>
+    <link rel="stylesheet" href="../onboarding/onboarding.css" />
+  </head>
+  <body>
+    <main>
+      <h1 id="title"></h1>
+      <ol id="steps">
+        <li id="step-adp" data-step="adp-signed-in">
+          <h2 id="adp-title"></h2>
+          <p id="adp-body"></p>
+          <button id="ack-signed-in" type="button"></button>
+        </li>
+        <li id="step-schedule" data-step="my-schedule">
+          <h2 id="schedule-title"></h2>
+          <p id="schedule-body"></p>
+          <button id="open-schedule" type="button"></button>
+          <p id="position-captured" hidden></p>
+        </li>
+        <li id="step-google" data-step="google">
+          <h2 id="google-title"></h2>
+          <p id="google-body"></p>
+          <button id="connect-google" type="button"></button>
+          <p id="google-connected" hidden></p>
+          <p id="google-status" role="status"></p>
+        </li>
+        <li id="step-sync" data-step="first-sync">
+          <h2 id="sync-title"></h2>
+          <p id="sync-body"></p>
+          <button id="first-sync" type="button"></button>
+          <p id="sync-done" hidden></p>
+          <p id="sync-status" role="status"></p>
+        </li>
+      </ol>
+      <p id="done" hidden></p>
+      <section>
+        <h2 id="settings-title"></h2>
+        <label id="time-zone-label" for="time-zone"></label>
+        <input id="time-zone" name="time-zone" type="text" autocomplete="off" spellcheck="false" />
+        <p id="time-zone-help"></p>
+        <p id="time-zone-using"></p>
+        <button id="save-time-zone" type="button"></button>
+        <p id="time-zone-status" role="status"></p>
+        <p id="disconnect-help"></p>
+        <button id="disconnect" type="button"></button>
+        <p id="disconnect-status" role="status"></p>
+      </section>
+    </main>
+    <script type="module" src="../onboarding/main.ts"></script>
+  </body>
+</html>

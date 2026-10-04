@@ -79,6 +79,104 @@
   "notDue": {
     "message": "A Sync is not due yet."
   },
+  "settings": {
+    "message": "Settings"
+  },
+  "onboardingTitle": {
+    "message": "Set up ADP Shifts"
+  },
+  "adpSignedInTitle": {
+    "message": "Sign in to Workforce Now in this browser"
+  },
+  "adpSignedInBody": {
+    "message": "You must already be signed in to ADP Workforce Now in this browser. This extension never asks for your ADP password."
+  },
+  "ackSignedIn": {
+    "message": "I am signed in"
+  },
+  "myScheduleTitle": {
+    "message": "Open My Schedule once"
+  },
+  "myScheduleBody": {
+    "message": "Open My Schedule in Workforce Now. This page confirms when your Position has been captured."
+  },
+  "openWorkforceNow": {
+    "message": "Open Workforce Now"
+  },
+  "positionCaptured": {
+    "message": "Position captured."
+  },
+  "connectGoogleTitle": {
+    "message": "Connect Google"
+  },
+  "connectGoogleBody": {
+    "message": "Allow one consent screen so this extension can create a calendar it owns. The permission is calendar.app.created."
+  },
+  "connectGoogle": {
+    "message": "Connect Google"
+  },
+  "connectGoogleFailed": {
+    "message": "Google was not connected. Try again."
+  },
+  "googleConnected": {
+    "message": "Google connected."
+  },
+  "firstSyncTitle": {
+    "message": "Run the first Sync"
+  },
+  "firstSyncBody": {
+    "message": "Sync copies your schedule from today onward into the Shift Calendar."
+  },
+  "runFirstSync": {
+    "message": "Sync now"
+  },
+  "firstSyncDone": {
+    "message": "First Sync done."
+  },
+  "onboardingDone": {
+    "message": "Setup is complete. You can change these settings any time."
+  },
+  "settingsTitle": {
+    "message": "Settings"
+  },
+  "timeZoneLabel": {
+    "message": "Time zone override"
+  },
+  "timeZoneHelp": {
+    "message": "Leave blank to use this browser's time zone. The next Sync uses this zone for event times."
+  },
+  "timeZoneUsing": {
+    "message": "Next Sync uses $ZONE$.",
+    "placeholders": {
+      "zone": {
+        "content": "$1"
+      }
+    }
+  },
+  "saveTimeZone": {
+    "message": "Save time zone"
+  },
+  "timeZoneSaved": {
+    "message": "Time zone saved. It applies on the next Sync."
+  },
+  "timeZoneInvalid": {
+    "message": "Enter an IANA time zone such as America/Toronto, or leave blank."
+  },
+  "disconnect": {
+    "message": "Disconnect and clear data"
+  },
+  "disconnectHelp": {
+    "message": "Forgets the Google token and clears everything this extension stored."
+  },
+  "disconnectConfirm": {
+    "message": "Disconnect Google and clear all stored extension data?"
+  },
+  "disconnected": {
+    "message": "Google was disconnected and stored data was cleared."
+  },
+  "disconnectFailed": {
+    "message": "Stored data was cleared. Google did not revoke the token."
+  },
   "noLastSync": {
     "message": "No successful Sync yet."
   },
