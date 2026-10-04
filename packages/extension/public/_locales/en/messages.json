@@ -3,7 +3,7 @@
     "message": "ADP Shifts"
   },
   "extDescription": {
-    "message": "Sync the signed-in ADP Workforce Now schedule to Google Calendar."
+    "message": "Copies your ADP Workforce Now schedule into a Google Calendar it owns. No passwords, no servers, no tracking."
   },
   "syncNow": {
     "message": "Sync now"

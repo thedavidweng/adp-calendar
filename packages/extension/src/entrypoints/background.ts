@@ -116,7 +116,7 @@ async function notifyOutcome(result: { ok: boolean; reason?: string }): Promise<
   try {
     await browser.notifications.create(notice.id, {
       type: 'basic',
-      iconUrl: browser.runtime.getURL('/icon.png'),
+      iconUrl: browser.runtime.getURL('/icon-128.png'),
       title: browser.i18n.getMessage('extName'),
       message: browser.i18n.getMessage(notice.messageKey),
     });

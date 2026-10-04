@@ -6,6 +6,7 @@
   "scripts": {
     "build": "wxt build",
     "dev": "wxt",
+    "zip:store": "STORE_BUILD=1 wxt zip",
     "typecheck": "wxt prepare && tsc --noEmit -p .wxt/tsconfig.json"
   },
   "dependencies": {
