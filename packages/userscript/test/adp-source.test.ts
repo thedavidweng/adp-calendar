@@ -34,6 +34,24 @@ describe('page ADP source', () => {
     await expect(redirected.fetchMonthlyView('POS-0001', '2026-09-27', '2027-01-01')).resolves.toEqual({
       kind: 'redirected',
     });
+
+    const otherHost = createPageAdpSource(async () => ({
+      redirected: false,
+      url: 'https://online.adp.com/olp/olplanding.html',
+      text: '<html>Federation Redirector</html>',
+    }), () => 1);
+    await expect(otherHost.fetchMonthlyView('POS-0001', '2026-09-27', '2027-01-01')).resolves.toEqual({
+      kind: 'redirected',
+    });
+
+    const html = createPageAdpSource(async () => ({
+      redirected: false,
+      url: 'https://workforcenow.adp.com/mascsr/wfntlm/schedule/v1/monthlyview',
+      text: '<html>Please sign in</html>',
+    }), () => 1);
+    await expect(html.fetchMonthlyView('POS-0001', '2026-09-27', '2027-01-01')).resolves.toEqual({
+      kind: 'non-json',
+    });
   });
 
   it('fetches in the page with credentials and does not read cookies', async () => {
@@ -69,5 +87,9 @@ describe('GM state', () => {
     await state.setPositionId('POS-0001');
     await expect(state.getPositionId()).resolves.toBe('POS-0001');
     expect(saved).toEqual({ positionId: 'POS-0001' });
+
+    await state.clearPositionId();
+    await expect(state.getPositionId()).resolves.toBeNull();
+    expect(saved.positionId).toBeNull();
   });
 });

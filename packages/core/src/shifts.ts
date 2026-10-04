@@ -17,6 +17,7 @@ export interface HolidayEvent {
 export type ParseShiftsResult =
   | { ok: true; shifts: ShiftEvent[]; holidays: HolidayEvent[] }
   | { ok: false; reason: 'no-schedule' }
+  | { ok: false; reason: 'position-invalid' }
   | { ok: false; reason: 'shape-drift' }
   | { ok: false; reason: 'adp-error'; description: string };
 
@@ -38,10 +39,14 @@ export function parseShifts(body: unknown): ParseShiftsResult {
     return { ok: false, reason: 'shape-drift' };
   }
   const data = body.data;
+  // err_nonTimeEmployee also names field positionId; that is an empty schedule, not an invalid Position.
   if (data.statusDescription === 'err_nonTimeEmployee') {
     return { ok: false, reason: 'no-schedule' };
   }
   if (data.status === 'failure' || data.statusCode !== 200) {
+    if (failureMentionsPosition(data)) {
+      return { ok: false, reason: 'position-invalid' };
+    }
     const description = typeof data.statusDescription === 'string' ? data.statusDescription : 'adp-error';
     return { ok: false, reason: 'adp-error', description };
   }
@@ -96,6 +101,41 @@ export function parseShifts(body: unknown): ParseShiftsResult {
     }
   }
   return { ok: true, shifts, holidays };
+}
+
+function failureMentionsPosition(data: Record<string, unknown>): boolean {
+  if (typeof data.statusDescription === 'string' && data.statusDescription.includes('positionId')) {
+    return true;
+  }
+  if (!Array.isArray(data.details)) {
+    return false;
+  }
+  for (const detail of data.details) {
+    if (!isRecord(detail)) {
+      continue;
+    }
+    if (typeof detail.err_msg === 'string' && detail.err_msg.includes('positionId')) {
+      return true;
+    }
+    if (!Array.isArray(detail.messages)) {
+      continue;
+    }
+    for (const message of detail.messages) {
+      if (typeof message === 'string' && message.includes('positionId')) {
+        return true;
+      }
+      if (!isRecord(message)) {
+        continue;
+      }
+      if (message.field === 'positionId') {
+        return true;
+      }
+      if (typeof message.message === 'string' && message.message.includes('positionId')) {
+        return true;
+      }
+    }
+  }
+  return false;
 }
 
 function readDefinition(value: unknown): { id: string; definition: ShiftDefinition } | null {

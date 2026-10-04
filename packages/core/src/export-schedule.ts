@@ -17,6 +17,9 @@ export async function exportSchedule(input: ExportInput): Promise<ExportResult> 
 
   const parsed = parseShifts(fetched.body);
   if (!parsed.ok) {
+    if (parsed.reason === 'position-invalid') {
+      await input.state.clearPositionId();
+    }
     return parsed;
   }
 

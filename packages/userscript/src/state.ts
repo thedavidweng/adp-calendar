@@ -30,6 +30,9 @@ export function createGmState(gm: GmValueStore): GmState {
     async setPositionId(positionId) {
       await gm.setValue(POSITION_KEY, positionId);
     },
+    async clearPositionId() {
+      await gm.setValue(POSITION_KEY, null);
+    },
     async getTimeZone(browserZone) {
       return configuredTimeZone(await gm.getValue(TIME_ZONE_KEY), browserZone);
     },

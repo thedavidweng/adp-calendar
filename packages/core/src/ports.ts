@@ -18,6 +18,7 @@ export interface Clock {
 export interface StateStore {
   getPositionId(): Promise<string | null>;
   setPositionId(positionId: string): Promise<void>;
+  clearPositionId(): Promise<void>;
 }
 
 export type ExportResult =
@@ -25,6 +26,7 @@ export type ExportResult =
   | { ok: false; reason: 'no-position' }
   | { ok: false; reason: 'session-dead' }
   | { ok: false; reason: 'no-schedule' }
+  | { ok: false; reason: 'position-invalid' }
   | { ok: false; reason: 'shape-drift' }
   | { ok: false; reason: 'adp-error'; description: string };
 

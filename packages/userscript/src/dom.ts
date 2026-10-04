@@ -1,4 +1,5 @@
 const BUTTON_ID = 'adp-calendar-export';
+const LINK_ID = 'adp-calendar-report-issue';
 
 export function iframeSrcs(doc: Document): string[] {
   return [...doc.querySelectorAll('iframe')]
@@ -6,7 +7,10 @@ export function iframeSrcs(doc: Document): string[] {
     .filter((src): src is string => Boolean(src));
 }
 
-export function mountButton(label: string, onClick: () => void): { setLabel(label: string): void } {
+export function mountButton(
+  label: string,
+  onClick: () => void,
+): { setLabel(label: string): void; setReportLink(href: string | null, label?: string): void } {
   const existing = document.getElementById(BUTTON_ID);
   const button = existing instanceof HTMLButtonElement ? existing : document.createElement('button');
   button.id = BUTTON_ID;
@@ -27,6 +31,27 @@ export function mountButton(label: string, onClick: () => void): { setLabel(labe
   return {
     setLabel(next) {
       button.textContent = next;
+    },
+    setReportLink(href: string | null, linkLabel?: string) {
+      const existing = document.getElementById(LINK_ID);
+      if (!href) {
+        existing?.remove();
+        return;
+      }
+      const link = existing instanceof HTMLAnchorElement ? existing : document.createElement('a');
+      link.id = LINK_ID;
+      link.href = href;
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      link.textContent = linkLabel ?? '';
+      link.style.position = 'fixed';
+      link.style.right = '16px';
+      link.style.bottom = '52px';
+      link.style.zIndex = '2147483647';
+      link.style.font = '14px sans-serif';
+      if (!existing) {
+        (document.body ?? document.documentElement).appendChild(link);
+      }
     },
   };
 }

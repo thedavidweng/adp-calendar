@@ -21,6 +21,9 @@ function memoryState(positionId: string | null): StateStore {
     async setPositionId(next) {
       stored = next;
     },
+    async clearPositionId() {
+      stored = null;
+    },
   };
 }
 

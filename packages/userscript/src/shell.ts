@@ -1,9 +1,10 @@
 import type { ExportResult, StateStore } from '@adp-calendar/core';
-import { t } from './i18n.ts';
+import { adpErrorMessage, t } from './i18n.ts';
 import { readPositionId } from './position.ts';
 
 export interface ExportButton {
   setLabel(label: string): void;
+  setReportLink(href: string | null, label?: string): void;
 }
 
 export interface ShellDom {
@@ -20,6 +21,8 @@ export function startUserscript(deps: {
   let button: ExportButton | null = null;
   let mode: 'prompt' | 'export' = 'prompt';
   let busy = false;
+  let rejectedPositionId: string | null = null;
+  let sawScheduleLeave = false;
 
   async function onClick(): Promise<void> {
     if (mode !== 'export' || busy) {
@@ -27,10 +30,12 @@ export function startUserscript(deps: {
     }
     busy = true;
     try {
+      const attemptedPositionId = await deps.state.getPositionId();
       const result = await deps.runExport();
       if (!button) {
         return;
       }
+      button.setReportLink(null);
       if (result.ok) {
         deps.dom.download(result.filename, result.ics);
         button.setLabel(t('exportButton'));
@@ -40,13 +45,33 @@ export function startUserscript(deps: {
         button.setLabel(t('signIn'));
         return;
       }
-      if (result.reason === 'no-position') {
-        mode = 'prompt';
-        button.setLabel(t('openMySchedule'));
+      if (result.reason === 'no-schedule') {
+        button.setLabel(t('noSchedule'));
         return;
       }
-      button.setLabel(t('exportFailed'));
+      if (result.reason === 'position-invalid') {
+        rejectedPositionId = attemptedPositionId;
+        sawScheduleLeave = false;
+        await deps.state.clearPositionId();
+        mode = 'prompt';
+        button.setLabel(t('openMyScheduleAgain'));
+        return;
+      }
+      if (result.reason === 'shape-drift') {
+        button.setLabel(t('shapeDrift'));
+        button.setReportLink(t('reportIssueUrl'), t('reportIssue'));
+        return;
+      }
+      if (result.reason === 'adp-error') {
+        button.setLabel(adpErrorMessage(result.description));
+        return;
+      }
+      mode = 'prompt';
+      button.setLabel(t('openMySchedule'));
+      const remaining: 'no-position' = result.reason;
+      void remaining;
     } catch {
+      button?.setReportLink(null);
       button?.setLabel(t('exportFailed'));
     } finally {
       busy = false;
@@ -56,7 +81,15 @@ export function startUserscript(deps: {
   return {
     async rescan() {
       const found = readPositionId(deps.dom.iframeSrcs());
-      if (found) {
+      if (rejectedPositionId) {
+        if (!found) {
+          sawScheduleLeave = true;
+        } else if (sawScheduleLeave || found !== rejectedPositionId) {
+          rejectedPositionId = null;
+          sawScheduleLeave = false;
+          await deps.state.setPositionId(found);
+        }
+      } else if (found) {
         await deps.state.setPositionId(found);
       }
       const cached = await deps.state.getPositionId();
@@ -67,6 +100,7 @@ export function startUserscript(deps: {
           void onClick();
         });
       } else if (mode !== next) {
+        button.setReportLink(null);
         button.setLabel(label);
       }
       mode = next;
