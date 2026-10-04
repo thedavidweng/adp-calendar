@@ -155,4 +155,22 @@ describe('userscript Export button', () => {
     expect(ui.label()).toBe('Please sign in to ADP first.');
     expect(ui.downloads).toEqual([]);
   });
+
+  it('shows a failure when Export throws, including an unknown time zone', async () => {
+    const state = memoryState('POS-0001');
+    const ui = fakeDom([]);
+    const shell = startUserscript({
+      dom: ui.dom,
+      state,
+      runExport: async () => {
+        throw new Error('No VTIMEZONE for Not/AZone');
+      },
+    });
+
+    await shell.rescan();
+    await ui.click();
+
+    expect(ui.label()).toBe('Could not export the schedule. Open My Schedule and try again.');
+    expect(ui.downloads).toEqual([]);
+  });
 });

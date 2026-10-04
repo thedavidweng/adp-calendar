@@ -12,7 +12,7 @@ export default defineConfig({
         description: 'Export the signed-in ADP Workforce Now schedule to an ICS file.',
         author: 'Davy',
         match: ['https://workforcenow.adp.com/*'],
-        grant: ['GM_getValue', 'GM_setValue'],
+        grant: ['GM_getValue', 'GM_setValue', 'GM_registerMenuCommand'],
         noframes: true,
         'run-at': 'document-idle',
       },

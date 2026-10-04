@@ -3,12 +3,19 @@ import { addDays } from './schedule-range.ts';
 export interface ShiftEvent {
   uid: string;
   title: string;
+  description?: string;
   start: string;
   end: string;
 }
 
+export interface HolidayEvent {
+  uid: string;
+  title: string;
+  date: string;
+}
+
 export type ParseShiftsResult =
-  | { ok: true; shifts: ShiftEvent[] }
+  | { ok: true; shifts: ShiftEvent[]; holidays: HolidayEvent[] }
   | { ok: false; reason: 'no-schedule' }
   | { ok: false; reason: 'shape-drift' }
   | { ok: false; reason: 'adp-error'; description: string };
@@ -16,6 +23,9 @@ export type ParseShiftsResult =
 interface ShiftDefinition {
   templateName: string;
   payCodeDesc: string;
+  departmentDesc: string;
+  workedJobDesc: string;
+  locationDesc: string;
   inTime: string;
   outTime: string;
 }
@@ -40,7 +50,10 @@ export function parseShifts(body: unknown): ParseShiftsResult {
   }
 
   const shifts: ShiftEvent[] = [];
-  const seen = new Set<string>();
+  const holidays: HolidayEvent[] = [];
+  const seenShifts = new Set<string>();
+  const seenHolidays = new Set<string>();
+  const usedHolidayIds = new Set<string>();
   for (const detail of data.details) {
     if (!isRecord(detail) || !Array.isArray(detail.shiftDefinitions) || !Array.isArray(detail.positionShiftAssignments)) {
       return { ok: false, reason: 'shape-drift' };
@@ -62,15 +75,27 @@ export function parseShifts(body: unknown): ParseShiftsResult {
         if (!shift) {
           return { ok: false, reason: 'shape-drift' };
         }
-        if (seen.has(shift.uid)) {
+        if (seenShifts.has(shift.uid)) {
           return { ok: false, reason: 'shape-drift' };
         }
-        seen.add(shift.uid);
+        seenShifts.add(shift.uid);
         shifts.push(shift);
+      }
+      const holidayList = readHolidayList(assignment.holidays);
+      if (!holidayList) {
+        return { ok: false, reason: 'shape-drift' };
+      }
+      for (const holiday of holidayList) {
+        const key = `${holiday.date}\n${holiday.title}`;
+        if (seenHolidays.has(key)) {
+          continue;
+        }
+        seenHolidays.add(key);
+        holidays.push({ ...holiday, uid: holidayUid(holiday.date, usedHolidayIds) });
       }
     }
   }
-  return { ok: true, shifts };
+  return { ok: true, shifts, holidays };
 }
 
 function readDefinition(value: unknown): { id: string; definition: ShiftDefinition } | null {
@@ -85,10 +110,56 @@ function readDefinition(value: unknown): { id: string; definition: ShiftDefiniti
     definition: {
       inTime: value.inTime,
       outTime: value.outTime,
-      templateName: typeof value.templateName === 'string' ? value.templateName : '',
-      payCodeDesc: typeof value.payCodeDesc === 'string' ? value.payCodeDesc : '',
+      templateName: text(value.templateName),
+      payCodeDesc: text(value.payCodeDesc),
+      departmentDesc: text(value.departmentDesc),
+      workedJobDesc: text(value.workedJobDesc),
+      locationDesc: text(value.locationDesc),
     },
   };
+}
+
+function readHolidayList(value: unknown): Array<{ title: string; date: string }> | null {
+  if (value === undefined) {
+    return [];
+  }
+  if (!Array.isArray(value)) {
+    return null;
+  }
+  const holidays: Array<{ title: string; date: string }> = [];
+  for (const raw of value) {
+    const holiday = readHoliday(raw);
+    if (!holiday) {
+      return null;
+    }
+    holidays.push(holiday);
+  }
+  return holidays;
+}
+
+function readHoliday(value: unknown): { title: string; date: string } | null {
+  if (!isRecord(value) || typeof value.date !== 'string' || !DATE.test(value.date)) {
+    return null;
+  }
+  if (typeof value.description !== 'string') {
+    return null;
+  }
+  return {
+    title: value.description.trim() || 'Holiday',
+    date: value.date,
+  };
+}
+
+function holidayUid(date: string, used: Set<string>): string {
+  const stamp = date.replaceAll('-', '');
+  let id = `adph${stamp}`;
+  let extra = 2;
+  while (used.has(id)) {
+    id = `adph${stamp}-${extra}`;
+    extra += 1;
+  }
+  used.add(id);
+  return `${id}@adp-schedule-export`;
 }
 
 function readShift(value: unknown, definitions: Map<string, ShiftDefinition>): ShiftEvent | null {
@@ -138,24 +209,45 @@ function readShift(value: unknown, definitions: Map<string, ShiftDefinition>): S
     endTime = end.time;
   }
 
+  const description = shiftDescription(definition, value.status);
   return {
     uid: `adps${shiftObjectId}@adp-schedule-export`,
     title: shiftTitle(definition),
+    ...(description ? { description } : {}),
     start: `${startDate}T${startTime}`,
     end: `${endDate}T${endTime}`,
   };
 }
 
 function shiftTitle(definition: ShiftDefinition | undefined): string {
-  const template = definition?.templateName.trim() ?? '';
-  if (template) {
-    return template;
+  if (definition?.templateName) {
+    return definition.templateName;
   }
-  const payCode = definition?.payCodeDesc.trim() ?? '';
-  if (payCode) {
-    return payCode;
+  if (definition?.payCodeDesc) {
+    return definition.payCodeDesc;
   }
   return 'Shift';
+}
+
+function shiftDescription(definition: ShiftDefinition | undefined, status: unknown): string | undefined {
+  const lines: string[] = [];
+  const add = (label: string, value: string | undefined) => {
+    if (value) {
+      lines.push(`${label}: ${value}`);
+    }
+  };
+  add('Department', definition?.departmentDesc);
+  add('Job', definition?.workedJobDesc);
+  add('Location', definition?.locationDesc);
+  add('Pay code', definition?.payCodeDesc);
+  if (typeof status === 'string' && status !== 'P') {
+    lines.push(`Status: ${status}`);
+  }
+  return lines.length > 0 ? lines.join('\n') : undefined;
+}
+
+function text(value: unknown): string {
+  return typeof value === 'string' ? value.trim() : '';
 }
 
 function timeFromHour(value: unknown): string | null {

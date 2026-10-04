@@ -46,6 +46,8 @@ export function startUserscript(deps: {
         return;
       }
       button.setLabel(t('exportFailed'));
+    } catch {
+      button?.setLabel(t('exportFailed'));
     } finally {
       busy = false;
     }

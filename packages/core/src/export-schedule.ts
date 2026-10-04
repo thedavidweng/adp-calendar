@@ -22,7 +22,7 @@ export async function exportSchedule(input: ExportInput): Promise<ExportResult> 
 
   return {
     ok: true,
-    ics: shiftsToIcs(parsed.shifts, input.timeZone),
+    ics: shiftsToIcs(parsed.shifts, parsed.holidays, input.timeZone),
     filename: 'adp-shifts.ics',
   };
 }
