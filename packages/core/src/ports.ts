@@ -39,6 +39,38 @@ export interface SyncHistory {
   setLastSuccess(record: LastSuccess): Promise<void>;
 }
 
+/** Local Sync attempt log size. Oldest entries are dropped. Never uploaded. */
+export const SYNC_ATTEMPT_CAP = 50;
+
+export type SyncAttemptOutcome =
+  | 'success'
+  | 'no-position'
+  | 'needs-sign-in'
+  | 'session-dead'
+  | 'no-schedule'
+  | 'position-invalid'
+  | 'shape-drift'
+  | 'adp-error'
+  | 'google-auth'
+  | 'calendar-missing'
+  | 'conflict'
+  | 'google-error';
+
+/** One Sync that got past the due check. `sinceLastSuccessMs` is null when none has succeeded. */
+export interface SyncAttempt {
+  at: string;
+  sinceLastSuccessMs: number | null;
+  outcome: SyncAttemptOutcome;
+}
+
+/** Session-expired flag and the capped local attempt log. Both stay on the machine. */
+export interface SyncDiagnostics {
+  getSignInNotified(): Promise<boolean>;
+  setSignInNotified(notified: boolean): Promise<void>;
+  getAttempts(): Promise<SyncAttempt[]>;
+  setAttempts(attempts: readonly SyncAttempt[]): Promise<void>;
+}
+
 export type ExportResult =
   | { ok: true; ics: string; filename: string }
   | { ok: false; reason: 'no-position' }
@@ -124,6 +156,7 @@ export type SyncResult =
     }
   | { ok: true; skipped: 'not-due' }
   | { ok: false; reason: 'no-position' }
+  | { ok: false; reason: 'needs-sign-in' }
   | { ok: false; reason: 'session-dead' }
   | { ok: false; reason: 'no-schedule' }
   | { ok: false; reason: 'position-invalid' }
@@ -138,6 +171,7 @@ export interface SyncInput {
   timeZone: string;
   calendar: ShiftCalendar;
   history: SyncHistory;
+  diagnostics: SyncDiagnostics;
   /** When true, run even if the last success is newer than 3.5 days. */
   forced?: boolean;
 }

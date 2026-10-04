@@ -1,4 +1,4 @@
-import type { LastSuccess, StateStore, SyncHistory, SyncSummary } from '@adp-calendar/core';
+import type { LastSuccess, StateStore, SyncAttempt, SyncDiagnostics, SyncHistory, SyncSummary } from '@adp-calendar/core';
 import type { TokenStore } from './google-auth.ts';
 
 export const POSITION_KEY = 'positionId';
@@ -6,6 +6,9 @@ export const GOOGLE_ACCESS_TOKEN_KEY = 'googleAccessToken';
 export const GOOGLE_ACCESS_TOKEN_EXPIRES_KEY = 'googleAccessTokenExpiresAt';
 export const LAST_SUCCESS_AT_KEY = 'lastSuccessAt';
 export const LAST_SUCCESS_SUMMARY_KEY = 'lastSuccessSummary';
+export const SIGN_IN_NOTIFIED_KEY = 'signInNotified';
+export const SYNC_ATTEMPTS_KEY = 'syncAttempts';
+export const REAUTH_TAB_ID_KEY = 'reauthTabId';
 
 export interface KeyValueStorage {
   get(keys: readonly string[]): Promise<Record<string, unknown>>;
@@ -66,6 +69,78 @@ function isSummary(value: unknown): value is SyncSummary {
   return (['created', 'updated', 'restored', 'deleted'] as const).every(
     (key) => typeof record[key] === 'number' && Number.isFinite(record[key]),
   );
+}
+
+export function createSyncDiagnostics(storage: KeyValueStorage): SyncDiagnostics {
+  return {
+    async getSignInNotified() {
+      const items = await storage.get([SIGN_IN_NOTIFIED_KEY]);
+      return items[SIGN_IN_NOTIFIED_KEY] === true;
+    },
+    async setSignInNotified(notified) {
+      await storage.set({ [SIGN_IN_NOTIFIED_KEY]: notified });
+    },
+    async getAttempts() {
+      const items = await storage.get([SYNC_ATTEMPTS_KEY]);
+      return parseAttempts(items[SYNC_ATTEMPTS_KEY]);
+    },
+    async setAttempts(attempts) {
+      await storage.set({ [SYNC_ATTEMPTS_KEY]: attempts.map(copyAttempt) });
+    },
+  };
+}
+
+export function createReauthTabs(storage: KeyValueStorage): {
+  get(): Promise<number | null>;
+  set(tabId: number): Promise<void>;
+  clear(): Promise<void>;
+} {
+  return {
+    async get() {
+      const items = await storage.get([REAUTH_TAB_ID_KEY]);
+      const value = items[REAUTH_TAB_ID_KEY];
+      return typeof value === 'number' && Number.isInteger(value) && value >= 0 ? value : null;
+    },
+    async set(tabId) {
+      await storage.set({ [REAUTH_TAB_ID_KEY]: tabId });
+    },
+    async clear() {
+      await storage.set({ [REAUTH_TAB_ID_KEY]: null });
+    },
+  };
+}
+
+function parseAttempts(value: unknown): SyncAttempt[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+  return value.flatMap((item) => {
+    if (typeof item !== 'object' || item === null) {
+      return [];
+    }
+    const record = item as Record<string, unknown>;
+    if (typeof record.at !== 'string' || Number.isNaN(Date.parse(record.at)) || typeof record.outcome !== 'string') {
+      return [];
+    }
+    if (record.sinceLastSuccessMs !== null && typeof record.sinceLastSuccessMs !== 'number') {
+      return [];
+    }
+    return [
+      {
+        at: record.at,
+        sinceLastSuccessMs: record.sinceLastSuccessMs,
+        outcome: record.outcome as SyncAttempt['outcome'],
+      },
+    ];
+  });
+}
+
+function copyAttempt(attempt: SyncAttempt): SyncAttempt {
+  return {
+    at: attempt.at,
+    sinceLastSuccessMs: attempt.sinceLastSuccessMs,
+    outcome: attempt.outcome,
+  };
 }
 
 export function createTokenStore(storage: KeyValueStorage): TokenStore {

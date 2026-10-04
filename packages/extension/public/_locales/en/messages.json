@@ -32,6 +32,9 @@
   "noPosition": {
     "message": "Open My Schedule once so the extension can learn your Position."
   },
+  "needsSignIn": {
+    "message": "ADP needs you to sign in again"
+  },
   "sessionDead": {
     "message": "Sign in to ADP, then try Sync now again."
   },

@@ -1,4 +1,4 @@
-import type { AdpSource, ShiftCalendar, StateStore, SyncHistory, SyncResult } from '@adp-calendar/core';
+import type { AdpSource, ShiftCalendar, StateStore, SyncDiagnostics, SyncHistory, SyncResult } from '@adp-calendar/core';
 import { syncIsDue, syncSchedule } from '@adp-calendar/core/sync';
 import { authorizeGoogle, type TokenStore } from './google-auth.ts';
 
@@ -10,6 +10,7 @@ export async function runExtensionSync(deps: {
   launch(url: string, interactive: boolean): Promise<string | null | undefined>;
   state: StateStore;
   history: SyncHistory;
+  diagnostics: SyncDiagnostics;
   adp: AdpSource;
   timeZone: string;
   openCalendar(accessToken: string): ShiftCalendar;
@@ -40,6 +41,7 @@ export async function runExtensionSync(deps: {
     timeZone: deps.timeZone,
     calendar: deps.openCalendar(auth.accessToken),
     history: deps.history,
+    diagnostics: deps.diagnostics,
     forced: deps.forced,
   });
 }

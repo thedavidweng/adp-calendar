@@ -4,6 +4,7 @@ export type PopupSyncResult = SyncResult | { ok: false; reason: 'missing-client'
 
 const FAILURES = new Set([
   'no-position',
+  'needs-sign-in',
   'session-dead',
   'no-schedule',
   'position-invalid',
@@ -20,6 +21,7 @@ export type MessageKey =
   | 'syncCreatedSummary'
   | 'syncSummary'
   | 'noPosition'
+  | 'needsSignIn'
   | 'sessionDead'
   | 'noSchedule'
   | 'positionInvalid'
@@ -91,6 +93,8 @@ export function syncStatusText(result: PopupSyncResult, translate: Translator): 
   switch (result.reason) {
     case 'no-position':
       return translate('noPosition');
+    case 'needs-sign-in':
+      return translate('needsSignIn');
     case 'session-dead':
       return translate('sessionDead');
     case 'no-schedule':

@@ -15,6 +15,19 @@ export async function ensureDailySyncAlarm(alarms: {
   await alarms.create(SYNC_ALARM_NAME, { periodInMinutes: SYNC_ALARM_PERIOD_MINUTES });
 }
 
+/** One Sync at a time, so overlapping triggers cannot both treat a dead ADP Session as new. */
+export function createSyncQueue(): <T>(job: () => Promise<T>) => Promise<T> {
+  let tail: Promise<void> = Promise.resolve();
+  return (job) => {
+    const run = tail.then(job, job);
+    tail = run.then(
+      () => undefined,
+      () => undefined,
+    );
+    return run;
+  };
+}
+
 /** Page load and the daily alarm sync only when one is due. Sync now is forced. */
 export function syncRequestFor(event: { message?: unknown; alarmName?: string }): { forced: boolean } | null {
   if (event.alarmName !== undefined) {

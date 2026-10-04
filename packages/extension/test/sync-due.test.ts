@@ -1,4 +1,4 @@
-import type { StateStore, SyncHistory } from '@adp-calendar/core';
+import type { StateStore, SyncDiagnostics, SyncHistory } from '@adp-calendar/core';
 import { describe, expect, it } from 'vitest';
 import { runExtensionSync } from '../src/run-sync.ts';
 import {
@@ -9,6 +9,7 @@ import {
 } from '../src/storage.ts';
 import { lastSuccessText, type MessageKey } from '../src/sync-status.ts';
 import {
+  createSyncQueue,
   ensureDailySyncAlarm,
   PAGE_LOAD_MESSAGE,
   SYNC_ALARM_NAME,
@@ -54,6 +55,23 @@ function historyFrom(initial: typeof recent | null): SyncHistory & { reads: numb
   };
 }
 
+function idleDiagnostics(): SyncDiagnostics {
+  return {
+    async getSignInNotified() {
+      return false;
+    },
+    async setSignInNotified() {
+      throw new Error('sign-in flag should not change before Sync');
+    },
+    async getAttempts() {
+      return [];
+    },
+    async setAttempts() {
+      throw new Error('attempt log should not change before Sync');
+    },
+  };
+}
+
 function idleState(): StateStore {
   return {
     async getPositionId() {
@@ -76,6 +94,30 @@ describe('Sync triggers', () => {
     expect(syncRequestFor({ message: { type: SYNC_NOW_MESSAGE } })).toEqual({ forced: true });
     expect(syncRequestFor({ alarmName: 'other' })).toBeNull();
     expect(syncRequestFor({ message: { type: 'nope' } })).toBeNull();
+  });
+
+  it('runs one Sync at a time', async () => {
+    const enqueue = createSyncQueue();
+    const order: string[] = [];
+    let release = (): void => undefined;
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const first = enqueue(async () => {
+      order.push('start-1');
+      await gate;
+      order.push('end-1');
+    });
+    const second = enqueue(async () => {
+      order.push('start-2');
+    });
+
+    await Promise.resolve();
+    expect(order).toEqual(['start-1']);
+    release();
+    await first;
+    await second;
+    expect(order).toEqual(['start-1', 'end-1', 'start-2']);
   });
 
   it('creates one daily alarm and does not reset it once it exists', async () => {
@@ -114,6 +156,7 @@ describe('Sync triggers', () => {
       },
       state: idleState(),
       history,
+      diagnostics: idleDiagnostics(),
       adp: {
         async fetchMonthlyView() {
           throw new Error('ADP should not be fetched');
@@ -144,6 +187,7 @@ describe('Sync triggers', () => {
       },
       state: idleState(),
       history: historyFrom(recent),
+      diagnostics: idleDiagnostics(),
       adp: {
         async fetchMonthlyView() {
           throw new Error('ADP should wait until Google signs in');

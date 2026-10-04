@@ -6,6 +6,7 @@ import { addDays } from '../src/schedule-range.ts';
 import {
   SHIFT_CALENDAR_DESCRIPTION,
   SHIFT_CALENDAR_NAME,
+  SYNC_ATTEMPT_CAP,
   ShiftCalendarError,
   syncSchedule,
   type AdpSource,
@@ -15,6 +16,7 @@ import {
   type ShiftCalendarRange,
   type ShiftCalendarRecord,
   type StateStore,
+  type SyncDiagnostics,
   type SyncHistory,
   type SyncInput,
 } from '../src/index.ts';
@@ -153,6 +155,25 @@ function whenStamp(when: ShiftCalendarEvent['start']): string {
   return 'date' in when ? `${when.date}T00:00:00` : when.dateTime;
 }
 
+function memoryDiagnostics(): SyncDiagnostics {
+  let notified = false;
+  let attempts: Awaited<ReturnType<SyncDiagnostics['getAttempts']>> = [];
+  return {
+    async getSignInNotified() {
+      return notified;
+    },
+    async setSignInNotified(next) {
+      notified = next;
+    },
+    async getAttempts() {
+      return attempts;
+    },
+    async setAttempts(next) {
+      attempts = [...next];
+    },
+  };
+}
+
 function memoryHistory(initial: LastSuccess | null = null): SyncHistory & { saved: LastSuccess | null } {
   return {
     saved: initial,
@@ -178,6 +199,7 @@ function syncInput(
     timeZone,
     calendar,
     history,
+    diagnostics: memoryDiagnostics(),
   };
 }
 
@@ -288,7 +310,7 @@ describe('when a Sync is due', () => {
       },
     });
 
-    expect(result).toEqual({ ok: false, reason: 'session-dead' });
+    expect(result).toEqual({ ok: false, reason: 'needs-sign-in' });
     expect(calendar.calendars).toEqual([]);
     expect(history.saved).toEqual(previous);
   });
@@ -368,7 +390,7 @@ describe('first Sync', () => {
       adp: { async fetchMonthlyView() { return { kind: 'redirected' }; } },
     });
 
-    expect(result).toEqual({ ok: false, reason: 'session-dead' });
+    expect(result).toEqual({ ok: false, reason: 'needs-sign-in' });
     expect(calendar.calendars).toEqual([]);
     expect(calendar.writes).toEqual([]);
   });
@@ -580,12 +602,124 @@ describe('Shift Calendar reconciliation', () => {
     });
     const empty = await syncSchedule(syncInput(calendar, noScheduleFixture));
 
-    expect(dead).toEqual({ ok: false, reason: 'session-dead' });
+    expect(dead).toEqual({ ok: false, reason: 'needs-sign-in' });
     expect(empty).toEqual({ ok: false, reason: 'no-schedule' });
     expect(calendar.writes).toEqual([]);
     expect(JSON.stringify(storedEvents(calendar))).toBe(before);
   });
 });
+
+describe('ADP Session re-auth', () => {
+  function deadInput(instant: string, diagnostics: SyncDiagnostics, history: SyncHistory) {
+    return {
+      ...syncInput(throwingCalendar(), octoberFixture, instant, history),
+      adp: {
+        async fetchMonthlyView() {
+          return { kind: 'redirected' as const };
+        },
+      },
+      diagnostics,
+    };
+  }
+
+  it('asks once when a due Sync finds the ADP Session dead, then clears that on success', async () => {
+    const diagnostics = memoryDiagnostics();
+    let signInRequests = 0;
+    const setSignInNotified = diagnostics.setSignInNotified.bind(diagnostics);
+    diagnostics.setSignInNotified = async (notified) => {
+      if (notified && !(await diagnostics.getSignInNotified())) {
+        signInRequests += 1;
+      }
+      await setSignInNotified(notified);
+    };
+    const history = memoryHistory(successAt(threePointSixDaysMs));
+
+    const first = await syncSchedule(deadInput(now, diagnostics, history));
+    const second = await syncSchedule(deadInput(now, diagnostics, history));
+
+    expect(first).toEqual({ ok: false, reason: 'needs-sign-in' });
+    expect(second).toEqual({ ok: false, reason: 'session-dead' });
+    expect(signInRequests).toBe(1);
+    expect(await diagnostics.getSignInNotified()).toBe(true);
+    expect(await diagnostics.getAttempts()).toEqual([
+      { at: now, sinceLastSuccessMs: threePointSixDaysMs, outcome: 'needs-sign-in' },
+      { at: now, sinceLastSuccessMs: threePointSixDaysMs, outcome: 'session-dead' },
+    ]);
+
+    const calendar = memoryCalendar();
+    const success = await syncSchedule({
+      ...syncInput(calendar, octoberFixture, now, history),
+      diagnostics,
+      forced: true,
+    });
+    expect(success).toMatchObject({ ok: true, created: 5 });
+    expect(await diagnostics.getSignInNotified()).toBe(false);
+    expect((await diagnostics.getAttempts()).at(-1)).toEqual({
+      at: now,
+      sinceLastSuccessMs: threePointSixDaysMs,
+      outcome: 'success',
+    });
+
+    const again = await syncSchedule({ ...deadInput(now, diagnostics, history), forced: true });
+    expect(again).toEqual({ ok: false, reason: 'needs-sign-in' });
+    expect(signInRequests).toBe(2);
+  });
+
+  it('does not ask or log when a Sync is not due', async () => {
+    const diagnostics = memoryDiagnostics();
+    const history = memoryHistory(successAt(threePointFourDaysMs));
+    const result = await syncSchedule({
+      ...deadInput(now, diagnostics, history),
+      adp: {
+        async fetchMonthlyView() {
+          throw new Error('ADP should not be fetched');
+        },
+      },
+    });
+
+    expect(result).toEqual({ ok: true, skipped: 'not-due' });
+    expect(await diagnostics.getSignInNotified()).toBe(false);
+    expect(await diagnostics.getAttempts()).toEqual([]);
+  });
+
+  it('keeps the attempt log capped at the newest entries', async () => {
+    const diagnostics = memoryDiagnostics();
+    const history = memoryHistory(successAt(threePointSixDaysMs));
+    const start = Date.parse(now);
+    for (let i = 0; i < SYNC_ATTEMPT_CAP + 1; i += 1) {
+      const instant = new Date(start + i * 1000).toISOString();
+      await syncSchedule({ ...deadInput(instant, diagnostics, history), forced: true });
+    }
+
+    const attempts = await diagnostics.getAttempts();
+    expect(attempts).toHaveLength(SYNC_ATTEMPT_CAP);
+    expect(attempts[0]).toEqual({
+      at: new Date(start + 1000).toISOString(),
+      sinceLastSuccessMs: threePointSixDaysMs + 1000,
+      outcome: 'session-dead',
+    });
+    expect(attempts.at(-1)).toEqual({
+      at: new Date(start + SYNC_ATTEMPT_CAP * 1000).toISOString(),
+      sinceLastSuccessMs: threePointSixDaysMs + SYNC_ATTEMPT_CAP * 1000,
+      outcome: 'session-dead',
+    });
+    expect(attempts.some((attempt) => attempt.outcome === 'needs-sign-in')).toBe(false);
+  });
+});
+
+function throwingCalendar(): ShiftCalendar {
+  const fail = () => {
+    throw new Error('a dead ADP Session must not touch the Shift Calendar');
+  };
+  return {
+    findByName: fail,
+    create: fail,
+    list: fail,
+    insert: fail,
+    update: fail,
+    delete: fail,
+  };
+}
 
 function hideFromList(calendar: MemoryCalendar, id: string): ShiftCalendar {
   return {

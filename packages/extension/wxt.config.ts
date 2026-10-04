@@ -8,6 +8,11 @@ export default defineConfig({
     description: '__MSG_extDescription__',
     default_locale: 'en',
     permissions: ['alarms', 'storage', 'notifications', 'identity'],
+    icons: {
+      16: 'icon.png',
+      48: 'icon.png',
+      128: 'icon.png',
+    },
     // Plain fetch to Calendar REST needs Google's host. ADP cookies stay in the browser.
     host_permissions: ['https://workforcenow.adp.com/*', 'https://www.googleapis.com/*'],
   },

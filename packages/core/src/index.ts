@@ -5,6 +5,7 @@ export { readPositionId } from './position.ts';
 export {
   SHIFT_CALENDAR_DESCRIPTION,
   SHIFT_CALENDAR_NAME,
+  SYNC_ATTEMPT_CAP,
   ShiftCalendarError,
 } from './ports.ts';
 export type {
@@ -21,6 +22,9 @@ export type {
   ShiftCalendarRecord,
   ShiftCalendarWhen,
   StateStore,
+  SyncAttempt,
+  SyncAttemptOutcome,
+  SyncDiagnostics,
   SyncHistory,
   SyncInput,
   SyncResult,

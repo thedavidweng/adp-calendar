@@ -1,5 +1,14 @@
-import type { ShiftCalendarEvent, ShiftCalendarWhen, SyncInput, SyncResult, SyncSummary } from './ports.ts';
-import { SHIFT_CALENDAR_DESCRIPTION, SHIFT_CALENDAR_NAME, ShiftCalendarError } from './ports.ts';
+import type {
+  LastSuccess,
+  ShiftCalendarEvent,
+  ShiftCalendarWhen,
+  SyncAttempt,
+  SyncAttemptOutcome,
+  SyncInput,
+  SyncResult,
+  SyncSummary,
+} from './ports.ts';
+import { SHIFT_CALENDAR_DESCRIPTION, SHIFT_CALENDAR_NAME, SYNC_ATTEMPT_CAP, ShiftCalendarError } from './ports.ts';
 import { addDays, localToday, scheduleWindow } from './schedule-range.ts';
 import type { HolidayEvent, ShiftEvent } from './shifts.ts';
 import { parseShifts } from './shifts.ts';
@@ -18,6 +27,8 @@ export function syncIsDue(lastSuccessAt: string | null, now: Date): boolean {
   return now.getTime() - then > THREE_AND_A_HALF_DAYS_MS;
 }
 
+type AttemptResult = Exclude<SyncResult, { ok: true; skipped: 'not-due' }>;
+
 export async function syncSchedule(input: SyncInput): Promise<SyncResult> {
   const now = input.clock.now();
   const last = await input.history.getLastSuccess();
@@ -25,16 +36,23 @@ export async function syncSchedule(input: SyncInput): Promise<SyncResult> {
     return { ok: true, skipped: 'not-due' };
   }
 
+  const finish = (result: AttemptResult) => recordSyncAttempt(input, now, last, result);
+
   const positionId = await input.state.getPositionId();
   if (!positionId) {
-    return { ok: false, reason: 'no-position' };
+    return finish({ ok: false, reason: 'no-position' });
   }
 
   const today = localToday(now, input.timeZone);
   const range = scheduleWindow(now, input.timeZone);
   const fetched = await input.adp.fetchMonthlyView(positionId, range.startDate, range.endDate);
   if (fetched.kind !== 'json') {
-    return { ok: false, reason: 'session-dead' };
+    const notified = await input.diagnostics.getSignInNotified();
+    if (!notified) {
+      await input.diagnostics.setSignInNotified(true);
+      return finish({ ok: false, reason: 'needs-sign-in' });
+    }
+    return finish({ ok: false, reason: 'session-dead' });
   }
 
   const parsed = parseShifts(fetched.body);
@@ -42,7 +60,7 @@ export async function syncSchedule(input: SyncInput): Promise<SyncResult> {
     if (parsed.reason === 'position-invalid') {
       await input.state.clearPositionId();
     }
-    return parsed;
+    return finish(parsed);
   }
 
   const desired = [
@@ -70,18 +88,46 @@ export async function syncSchedule(input: SyncInput): Promise<SyncResult> {
       deleted: counts.deleted,
     };
     await input.history.setLastSuccess({ at: now.toISOString(), summary });
-    return {
+    return finish({
       ok: true,
       calendarId: calendar.id,
       createdCalendar: existing === null,
       ...summary,
-    };
+    });
   } catch (error) {
     if (error instanceof ShiftCalendarError) {
-      return { ok: false, reason: error.reason };
+      return finish({ ok: false, reason: error.reason });
     }
     throw error;
   }
+}
+
+async function recordSyncAttempt(
+  input: SyncInput,
+  now: Date,
+  last: LastSuccess | null,
+  result: AttemptResult,
+): Promise<AttemptResult> {
+  if (result.ok) {
+    await input.diagnostics.setSignInNotified(false);
+  }
+  const outcome: SyncAttemptOutcome = result.ok ? 'success' : result.reason;
+  const attempt: SyncAttempt = {
+    at: now.toISOString(),
+    sinceLastSuccessMs: sinceLastSuccess(last, now),
+    outcome,
+  };
+  const prior = await input.diagnostics.getAttempts();
+  await input.diagnostics.setAttempts([...prior.slice(-(SYNC_ATTEMPT_CAP - 1)), attempt]);
+  return result;
+}
+
+function sinceLastSuccess(last: LastSuccess | null, now: Date): number | null {
+  if (!last) {
+    return null;
+  }
+  const then = Date.parse(last.at);
+  return Number.isNaN(then) ? null : now.getTime() - then;
 }
 
 async function reconcile(
