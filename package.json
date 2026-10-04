@@ -1,0 +1,20 @@
+{
+  "name": "adp-calendar",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@12.9.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "type-check": "tsc --noEmit",
+    "build": "pnpm --filter @adp-calendar/userscript build"
+  },
+  "devDependencies": {
+    "@types/node": "^24.9.1",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.3"
+  }
+}

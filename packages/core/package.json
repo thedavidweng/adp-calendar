@@ -1,0 +1,13 @@
+{
+  "name": "@adp-calendar/core",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "ical-generator": "^11.1.2",
+    "timezones-ical-library": "^2.3.2"
+  }
+}
