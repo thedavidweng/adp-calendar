@@ -40,12 +40,24 @@ export interface ExportInput {
 export const SHIFT_CALENDAR_NAME = 'ADP Shifts';
 export const SHIFT_CALENDAR_DESCRIPTION = "Managed automatically, don't edit";
 
+export type ShiftCalendarWhen = { dateTime: string; timeZone: string } | { date: string };
+
 export interface ShiftCalendarEvent {
   id: string;
   title: string;
   description?: string;
-  start: { dateTime: string; timeZone: string };
-  end: { dateTime: string; timeZone: string };
+  start: ShiftCalendarWhen;
+  end: ShiftCalendarWhen;
+  transparency?: 'transparent' | 'opaque';
+  /** Set on events read back from the Shift Calendar. Cancelled events stay listed. */
+  status?: 'confirmed' | 'cancelled';
+}
+
+export interface ShiftCalendarRange {
+  /** Inclusive local dates. Events that only overlap this range are included. */
+  startDate: string;
+  endDate: string;
+  timeZone: string;
 }
 
 export interface NewShiftCalendar {
@@ -66,7 +78,10 @@ export interface ShiftCalendarRecord {
 export interface ShiftCalendar {
   findByName(name: string): Promise<ShiftCalendarRecord | null>;
   create(calendar: NewShiftCalendar): Promise<ShiftCalendarRecord>;
+  list(calendarId: string, range: ShiftCalendarRange): Promise<ShiftCalendarEvent[]>;
   insert(calendarId: string, event: ShiftCalendarEvent): Promise<void>;
+  update(calendarId: string, event: ShiftCalendarEvent): Promise<void>;
+  delete(calendarId: string, eventId: string): Promise<void>;
 }
 
 export class ShiftCalendarError extends Error {
@@ -80,7 +95,15 @@ export class ShiftCalendarError extends Error {
 }
 
 export type SyncResult =
-  | { ok: true; calendarId: string; createdCalendar: boolean; inserted: number }
+  | {
+      ok: true;
+      calendarId: string;
+      createdCalendar: boolean;
+      created: number;
+      updated: number;
+      restored: number;
+      deleted: number;
+    }
   | { ok: false; reason: 'no-position' }
   | { ok: false; reason: 'session-dead' }
   | { ok: false; reason: 'no-schedule' }

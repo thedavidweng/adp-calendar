@@ -17,10 +17,8 @@ const FAILURES = new Set([
 ]);
 
 export type MessageKey =
-  | 'syncCreatedOne'
-  | 'syncCreatedMany'
-  | 'syncAddedOne'
-  | 'syncAddedMany'
+  | 'syncCreatedSummary'
+  | 'syncSummary'
   | 'noPosition'
   | 'sessionDead'
   | 'noSchedule'
@@ -36,7 +34,7 @@ export type MessageKey =
   | 'syncing'
   | 'syncNow';
 
-type Translator = (key: MessageKey, substitution?: string) => string;
+type Translator = (key: MessageKey, substitution?: string | string[]) => string;
 
 export function isPopupSyncResult(value: unknown): value is PopupSyncResult {
   if (typeof value !== 'object' || value === null) {
@@ -47,7 +45,10 @@ export function isPopupSyncResult(value: unknown): value is PopupSyncResult {
     return (
       typeof record.calendarId === 'string' &&
       typeof record.createdCalendar === 'boolean' &&
-      typeof record.inserted === 'number'
+      typeof record.created === 'number' &&
+      typeof record.updated === 'number' &&
+      typeof record.restored === 'number' &&
+      typeof record.deleted === 'number'
     );
   }
   if (record.ok !== false || typeof record.reason !== 'string') {
@@ -61,11 +62,8 @@ export function isPopupSyncResult(value: unknown): value is PopupSyncResult {
 
 export function syncStatusText(result: PopupSyncResult, translate: Translator): string {
   if (result.ok) {
-    const count = String(result.inserted);
-    if (result.createdCalendar) {
-      return result.inserted === 1 ? translate('syncCreatedOne') : translate('syncCreatedMany', count);
-    }
-    return result.inserted === 1 ? translate('syncAddedOne') : translate('syncAddedMany', count);
+    const counts = [String(result.created), String(result.updated), String(result.restored), String(result.deleted)];
+    return translate(result.createdCalendar ? 'syncCreatedSummary' : 'syncSummary', counts);
   }
   switch (result.reason) {
     case 'no-position':

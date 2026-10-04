@@ -11,26 +11,22 @@
   "syncing": {
     "message": "Syncing…"
   },
-  "syncCreatedOne": {
-    "message": "Created ADP Shifts and added 1 shift."
-  },
-  "syncCreatedMany": {
-    "message": "Created ADP Shifts and added $COUNT$ shifts.",
+  "syncCreatedSummary": {
+    "message": "Created ADP Shifts. $CREATED$ created, $UPDATED$ updated, $RESTORED$ restored, $DELETED$ deleted.",
     "placeholders": {
-      "count": {
-        "content": "$1"
-      }
+      "created": { "content": "$1" },
+      "updated": { "content": "$2" },
+      "restored": { "content": "$3" },
+      "deleted": { "content": "$4" }
     }
   },
-  "syncAddedOne": {
-    "message": "Added 1 shift to ADP Shifts."
-  },
-  "syncAddedMany": {
-    "message": "Added $COUNT$ shifts to ADP Shifts.",
+  "syncSummary": {
+    "message": "ADP Shifts: $CREATED$ created, $UPDATED$ updated, $RESTORED$ restored, $DELETED$ deleted.",
     "placeholders": {
-      "count": {
-        "content": "$1"
-      }
+      "created": { "content": "$1" },
+      "updated": { "content": "$2" },
+      "restored": { "content": "$3" },
+      "deleted": { "content": "$4" }
     }
   },
   "noPosition": {

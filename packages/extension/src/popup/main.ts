@@ -7,7 +7,7 @@ if (!(button instanceof HTMLButtonElement) || !(status instanceof HTMLElement)) 
   throw new Error('Sync popup is missing its controls');
 }
 
-function translate(key: MessageKey, substitution?: string): string {
+function translate(key: MessageKey, substitution?: string | string[]): string {
   return substitution === undefined ? browser.i18n.getMessage(key) : browser.i18n.getMessage(key, substitution);
 }
 

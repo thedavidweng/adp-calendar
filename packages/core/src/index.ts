@@ -16,9 +16,12 @@ export type {
   NewShiftCalendar,
   ShiftCalendar,
   ShiftCalendarEvent,
+  ShiftCalendarRange,
   ShiftCalendarRecord,
+  ShiftCalendarWhen,
   StateStore,
   SyncInput,
   SyncResult,
 } from './ports.ts';
+export { addDays } from './schedule-range.ts';
 export { syncSchedule } from './sync-schedule.ts';

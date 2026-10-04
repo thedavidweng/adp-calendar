@@ -1,10 +1,17 @@
-import type { ShiftCalendarEvent, SyncInput, SyncResult } from './ports.ts';
+import type { ShiftCalendarEvent, ShiftCalendarWhen, SyncInput, SyncResult } from './ports.ts';
 import { SHIFT_CALENDAR_DESCRIPTION, SHIFT_CALENDAR_NAME, ShiftCalendarError } from './ports.ts';
-import { localToday, scheduleWindow } from './schedule-range.ts';
-import type { ShiftEvent } from './shifts.ts';
+import { addDays, localToday, scheduleWindow } from './schedule-range.ts';
+import type { HolidayEvent, ShiftEvent } from './shifts.ts';
 import { parseShifts } from './shifts.ts';
 
 const ICS_SUFFIX = '@adp-schedule-export';
+
+interface SyncCounts {
+  created: number;
+  updated: number;
+  restored: number;
+  deleted: number;
+}
 
 export async function syncSchedule(input: SyncInput): Promise<SyncResult> {
   const positionId = await input.state.getPositionId();
@@ -28,9 +35,12 @@ export async function syncSchedule(input: SyncInput): Promise<SyncResult> {
     return parsed;
   }
 
-  const events = parsed.shifts
-    .filter((shift) => shift.start.slice(0, 10) >= today)
-    .map((shift) => toGoogleShift(shift, input.timeZone));
+  const desired = [
+    ...parsed.shifts
+      .filter((shift) => shift.start.slice(0, 10) >= today)
+      .map((shift) => toGoogleShift(shift, input.timeZone)),
+    ...parsed.holidays.filter((holiday) => holiday.date >= today).map((holiday) => toGoogleHoliday(holiday)),
+  ];
 
   try {
     const existing = await input.calendar.findByName(SHIFT_CALENDAR_NAME);
@@ -42,14 +52,12 @@ export async function syncSchedule(input: SyncInput): Promise<SyncResult> {
         timeZone: input.timeZone,
         private: true,
       }));
-    for (const event of events) {
-      await input.calendar.insert(calendar.id, event);
-    }
+    const counts = await reconcile(input, calendar.id, today, range.endDate, desired);
     return {
       ok: true,
       calendarId: calendar.id,
       createdCalendar: existing === null,
-      inserted: events.length,
+      ...counts,
     };
   } catch (error) {
     if (error instanceof ShiftCalendarError) {
@@ -57,6 +65,59 @@ export async function syncSchedule(input: SyncInput): Promise<SyncResult> {
     }
     throw error;
   }
+}
+
+async function reconcile(
+  input: SyncInput,
+  calendarId: string,
+  today: string,
+  endDate: string,
+  desired: ShiftCalendarEvent[],
+): Promise<SyncCounts> {
+  const listed = await input.calendar.list(calendarId, { startDate: today, endDate, timeZone: input.timeZone });
+  const wanted = new Map(desired.map((event) => [event.id, event]));
+  const seen = new Set<string>();
+  const counts: SyncCounts = { created: 0, updated: 0, restored: 0, deleted: 0 };
+
+  for (const event of listed) {
+    if (startDate(event) < today) {
+      continue;
+    }
+    const want = wanted.get(event.id);
+    if (!want) {
+      if (event.status !== 'cancelled') {
+        await input.calendar.delete(calendarId, event.id);
+        counts.deleted += 1;
+      }
+      continue;
+    }
+    seen.add(event.id);
+    if (event.status === 'cancelled') {
+      await input.calendar.update(calendarId, want);
+      counts.restored += 1;
+    } else if (!sameEvent(event, want)) {
+      await input.calendar.update(calendarId, want);
+      counts.updated += 1;
+    }
+  }
+
+  for (const event of desired) {
+    if (seen.has(event.id)) {
+      continue;
+    }
+    try {
+      await input.calendar.insert(calendarId, event);
+      counts.created += 1;
+    } catch (error) {
+      if (!(error instanceof ShiftCalendarError) || error.reason !== 'conflict') {
+        throw error;
+      }
+      await input.calendar.update(calendarId, event);
+      counts.restored += 1;
+    }
+  }
+
+  return counts;
 }
 
 function toGoogleShift(shift: ShiftEvent, timeZone: string): ShiftCalendarEvent {
@@ -69,6 +130,41 @@ function toGoogleShift(shift: ShiftEvent, timeZone: string): ShiftCalendarEvent 
   };
 }
 
+function toGoogleHoliday(holiday: HolidayEvent): ShiftCalendarEvent {
+  return {
+    id: googleEventId(holiday.uid),
+    title: holiday.title,
+    start: { date: holiday.date },
+    end: { date: addDays(holiday.date, 1) },
+    transparency: 'transparent',
+  };
+}
+
 function googleEventId(uid: string): string {
   return uid.endsWith(ICS_SUFFIX) ? uid.slice(0, -ICS_SUFFIX.length) : uid;
+}
+
+function startDate(event: ShiftCalendarEvent): string {
+  return 'date' in event.start ? event.start.date : event.start.dateTime.slice(0, 10);
+}
+
+function sameEvent(existing: ShiftCalendarEvent, desired: ShiftCalendarEvent): boolean {
+  return (
+    existing.title === desired.title &&
+    (existing.description ?? '') === (desired.description ?? '') &&
+    sameWhen(existing.start, desired.start) &&
+    sameWhen(existing.end, desired.end) &&
+    transparency(existing) === transparency(desired)
+  );
+}
+
+function sameWhen(existing: ShiftCalendarWhen, desired: ShiftCalendarWhen): boolean {
+  if ('date' in existing || 'date' in desired) {
+    return 'date' in existing && 'date' in desired && existing.date === desired.date;
+  }
+  return existing.dateTime === desired.dateTime && existing.timeZone === desired.timeZone;
+}
+
+function transparency(event: ShiftCalendarEvent): 'transparent' | 'opaque' {
+  return event.transparency === 'transparent' ? 'transparent' : 'opaque';
 }
