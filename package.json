@@ -11,10 +11,14 @@
     "typecheck": "tsc --noEmit && pnpm --filter @adp-calendar/extension typecheck",
     "type-check": "tsc --noEmit && pnpm --filter @adp-calendar/extension typecheck",
     "build": "pnpm -r --if-present build",
-    "build:extension": "pnpm --filter @adp-calendar/extension build"
+    "build:extension": "pnpm --filter @adp-calendar/extension build",
+    "zip:extension": "pnpm --filter @adp-calendar/extension zip:store",
+    "store:upload": "chrome-webstore-upload upload --source packages/extension/.output/chrome-mv3",
+    "store:publish": "chrome-webstore-upload publish"
   },
   "devDependencies": {
     "@types/node": "^24.9.1",
+    "chrome-webstore-upload-cli": "4.0.2",
     "typescript": "^7.0.2",
     "vitest": "^5.0.3"
   }

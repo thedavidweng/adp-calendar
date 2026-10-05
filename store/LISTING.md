@@ -24,7 +24,7 @@ WXT_GOOGLE_OAUTH_CLIENT_ID=<client-id>.apps.googleusercontent.com pnpm --filter 
 | Small promo tile (440×280) | `promo-small-440x280.png` |
 | Marquee promo tile (1400×560) | `promo-marquee-1400x560.png` |
 | Official URL | Choose `thedavidweng.github.io` after verifying it in Search Console (optional) |
-| Homepage URL | https://thedavidweng.github.io/adp-calendar/ |
+| Homepage URL | https://adp-shifts.blahaj.uk/ |
 | Support URL | https://github.com/thedavidweng/adp-calendar/issues |
 | Mature content | No |
 
@@ -56,7 +56,7 @@ PRIVATE BY DESIGN
 • "Disconnect and clear data" revokes Google access and erases everything the extension stored.
 
 Free and open source under the MIT License: https://github.com/thedavidweng/adp-calendar
-Privacy policy: https://thedavidweng.github.io/adp-calendar/privacy/
+Privacy policy: https://adp-shifts.blahaj.uk/privacy/
 
 ADP Shifts is an independent project. It is not affiliated with, endorsed by, or sponsored by ADP, Inc. or Google LLC. ADP and Workforce Now are registered trademarks of ADP, Inc.
 ```
@@ -100,7 +100,7 @@ Check all three certifications:
 - I do not use or transfer user data for purposes that are unrelated to my item's single purpose.
 - I do not use or transfer user data to determine creditworthiness or for lending purposes.
 
-Privacy policy URL: `https://thedavidweng.github.io/adp-calendar/privacy/`
+Privacy policy URL: `https://adp-shifts.blahaj.uk/privacy/`
 
 ## Distribution tab
 

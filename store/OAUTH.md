@@ -27,9 +27,9 @@ Google only accepts a homepage and privacy policy on a domain you have verified 
 | App name | ADP Shifts |
 | User support email | your Google account email |
 | App logo | `store/images/oauth-logo-120.png` (120×120) |
-| Application home page | https://thedavidweng.github.io/adp-calendar/ |
-| Application privacy policy | https://thedavidweng.github.io/adp-calendar/privacy/ |
-| Application terms of service | https://thedavidweng.github.io/adp-calendar/terms/ |
+| Application home page | https://adp-shifts.blahaj.uk/ |
+| Application privacy policy | https://adp-shifts.blahaj.uk/privacy/ |
+| Application terms of service | https://adp-shifts.blahaj.uk/terms/ |
 | Authorized domains | `thedavidweng.github.io` (or your custom domain) |
 | Developer contact | your email |
 

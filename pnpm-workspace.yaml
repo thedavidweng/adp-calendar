@@ -2,3 +2,5 @@ packages:
   - packages/core
   - packages/userscript
   - packages/extension
+minimumReleaseAgeExclude:
+  - chrome-webstore-upload-cli@4.0.2

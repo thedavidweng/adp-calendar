@@ -27,7 +27,7 @@ export default defineConfig({
         32: 'icon-32.png',
       },
     },
-    homepage_url: 'https://thedavidweng.github.io/adp-calendar/',
+    homepage_url: 'https://adp-shifts.blahaj.uk/',
     // Plain fetch to Calendar REST needs Google's host. ADP cookies stay in the browser.
     host_permissions: [
       'https://workforcenow.adp.com/*',
