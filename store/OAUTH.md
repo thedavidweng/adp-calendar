@@ -6,18 +6,16 @@
 
 Google only accepts a homepage and privacy policy on a domain you have verified in [Search Console](https://search.google.com/search-console).
 
-- `github.io` is a public suffix, so the domain to verify is `thedavidweng.github.io`.
-- A project site lives under `/adp-calendar/`, but Search Console verifies a domain from its root. Either:
-  - create a `thedavidweng.github.io` user-site repo and put Google's HTML verification file at its root, or
-  - point a custom domain at this site (add `site/CNAME`) and verify it with a DNS TXT record. This is the more reliable route, and it also gives a nicer Official URL in the store.
-- Add the verified domain under **Branding › Authorized domains**.
+- The site uses `adp-shifts.blahaj.uk`, served by GitHub Pages with a DNS-only CNAME in Cloudflare.
+- Verify ownership of `blahaj.uk` in Search Console with the Google-provided DNS TXT record in Cloudflare.
+- Add `blahaj.uk` under **Branding › Authorized domains**. Keep `chromiumapp.org` for the extension OAuth redirect.
 
 ## 2. OAuth client
 
 - Type: **Web application** (`launchWebAuthFlow` uses a normal web redirect, which also works in non-Google Chromium browsers).
 - Authorized redirect URIs:
   - `https://dkjgilecoojembpgookbeepjdlcapchg.chromiumapp.org/` (unpacked development build, pinned by the manifest `key`)
-  - `https://<store-item-id>.chromiumapp.org/` (published item, ID shown in the Developer Dashboard)
+  - `https://obccfkjmkfhljjnamibiiolagcpmjklj.chromiumapp.org/` (published item, ID shown in the Developer Dashboard)
 - No client secret is used or shipped. The extension uses the implicit (`response_type=token`) flow.
 
 ## 3. Branding (OAuth consent screen)
@@ -30,7 +28,7 @@ Google only accepts a homepage and privacy policy on a domain you have verified 
 | Application home page | https://adp-shifts.blahaj.uk/ |
 | Application privacy policy | https://adp-shifts.blahaj.uk/privacy/ |
 | Application terms of service | https://adp-shifts.blahaj.uk/terms/ |
-| Authorized domains | `thedavidweng.github.io` (or your custom domain) |
+| Authorized domains | `blahaj.uk`, `chromiumapp.org` |
 | Developer contact | your email |
 
 The homepage already meets Google's homepage rules: it describes what the app does, links the privacy policy, and is publicly reachable without sign-in. The privacy policy includes the Limited Use disclosure Google requires, word for word.

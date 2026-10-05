@@ -23,7 +23,7 @@ WXT_GOOGLE_OAUTH_CLIENT_ID=<client-id>.apps.googleusercontent.com pnpm --filter 
 | Screenshots (1280×800) | `screenshot-1-calendar.png`, `screenshot-2-setup.png`, `screenshot-3-scope.png`, `screenshot-4-privacy.png` |
 | Small promo tile (440×280) | `promo-small-440x280.png` |
 | Marquee promo tile (1400×560) | `promo-marquee-1400x560.png` |
-| Official URL | Choose `thedavidweng.github.io` after verifying it in Search Console (optional) |
+| Official URL | Choose `adp-shifts.blahaj.uk` after verifying it in Search Console (optional) |
 | Homepage URL | https://adp-shifts.blahaj.uk/ |
 | Support URL | https://github.com/thedavidweng/adp-calendar/issues |
 | Mature content | No |
@@ -111,7 +111,7 @@ Privacy policy URL: `https://adp-shifts.blahaj.uk/privacy/`
 ## Test instructions (for the reviewer)
 
 ```text
-This extension needs an ADP Workforce Now employee account, which the review team will not have. A demo video of the full flow is here: <link to unlisted YouTube video>.
+This extension needs an ADP Workforce Now employee account, which the review team will not have. The public source and permission-by-permission explanation are available at https://github.com/thedavidweng/adp-calendar and https://adp-shifts.blahaj.uk/privacy/.
 
 What to verify without an ADP account:
 1. Install the extension. The setup page opens automatically.
@@ -125,7 +125,7 @@ Source code: https://github.com/thedavidweng/adp-calendar
 
 ## Before you submit
 
-- [ ] The store item ID's redirect URI `https://<store-item-id>.chromiumapp.org/` is added to the Google OAuth client (see `store/OAUTH.md`).
+- [ ] The store item ID's redirect URI `https://obccfkjmkfhljjnamibiiolagcpmjklj.chromiumapp.org/` is added to the Google OAuth client (see `store/OAUTH.md`).
 - [ ] The package was built with the production `WXT_GOOGLE_OAUTH_CLIENT_ID`.
 - [ ] The privacy policy URL loads and matches what the extension does.
 - [ ] Version in `packages/extension/package.json` is bumped for every new upload.

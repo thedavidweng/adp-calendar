@@ -3,10 +3,11 @@ name: Chrome Web Store
 on:
   workflow_dispatch:
     inputs:
-      publish:
-        description: Submit the uploaded package for store review
-        type: boolean
-        default: false
+      action:
+        description: Build a package, upload a draft, or upload and submit for review
+        type: choice
+        options: [build, upload, publish]
+        default: upload
   push:
     tags: ['v*']
 
@@ -35,6 +36,10 @@ jobs:
       - name: Build store package
         run: |
           test -n "$WXT_GOOGLE_OAUTH_CLIENT_ID"
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            version=$(node -p "require('./packages/extension/package.json').version")
+            test "$GITHUB_REF_NAME" = "v$version"
+          fi
           pnpm zip:extension
       - uses: actions/upload-artifact@v4
         with:
@@ -42,6 +47,7 @@ jobs:
           path: packages/extension/.output/adp-shifts-*-chrome.zip
           if-no-files-found: error
       - name: Upload store draft
+        if: inputs.action != 'build'
         run: pnpm store:upload
         env:
           EXTENSION_ID: ${{ vars.CWS_EXTENSION_ID }}
@@ -50,7 +56,7 @@ jobs:
           CLIENT_SECRET: ${{ secrets.CWS_CLIENT_SECRET }}
           REFRESH_TOKEN: ${{ secrets.CWS_REFRESH_TOKEN }}
       - name: Submit for review
-        if: startsWith(github.ref, 'refs/tags/v') || inputs.publish
+        if: startsWith(github.ref, 'refs/tags/v') || inputs.action == 'publish'
         run: pnpm store:publish
         env:
           EXTENSION_ID: ${{ vars.CWS_EXTENSION_ID }}
