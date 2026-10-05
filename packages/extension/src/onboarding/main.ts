@@ -55,7 +55,8 @@ function browserZone(): string {
   return Intl.DateTimeFormat().resolvedOptions().timeZone;
 }
 
-title.textContent = translate('onboardingTitle');
+document.title = translate('onboardingTitle');
+title.textContent = document.title;
 adpTitle.textContent = translate('adpSignedInTitle');
 adpBody.textContent = translate('adpSignedInBody');
 ackSignedIn.textContent = translate('ackSignedIn');

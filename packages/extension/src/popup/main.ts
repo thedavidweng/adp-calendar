@@ -13,6 +13,8 @@ import {
 import { ONBOARDING_PAGE } from '../onboarding.ts';
 import { SYNC_NOW_MESSAGE } from '../sync-trigger.ts';
 
+document.title = browser.i18n.getMessage('extName');
+
 const button = document.querySelector('#sync');
 const status = document.querySelector('#status');
 const lastSync = document.querySelector('#last-sync');

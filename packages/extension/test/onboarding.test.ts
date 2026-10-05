@@ -301,7 +301,7 @@ describe('onboarding copy', () => {
       resolve(dirname(fileURLToPath(import.meta.url)), '../src/entrypoints/onboarding.html'),
       'utf8',
     );
-    expect(html).toContain('__MSG_onboardingTitle__');
+    expect(html).toContain('<title>Set up ADP Shifts</title>');
     expect(html).toContain('../onboarding/main.ts');
     expect(html).not.toMatch(/password|My Schedule|Connect Google/);
   });
