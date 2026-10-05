@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { ADP_SIGN_IN_URL, SIGN_IN_NOTIFICATION_ID, openSignInFromNotification, reauthSyncRequest } from '../src/reauth.ts';
+import { ADP_MY_SCHEDULE_URL, ADP_SIGN_IN_URL, SIGN_IN_NOTIFICATION_ID, openSignInFromNotification, reauthSyncRequest } from '../src/reauth.ts';
 import {
   REAUTH_TAB_ID_KEY,
   SIGN_IN_NOTIFIED_KEY,
@@ -65,6 +65,12 @@ describe('ADP sign-in notification', () => {
     expect(opened).toEqual([ADP_SIGN_IN_URL]);
     expect(ADP_SIGN_IN_URL).toBe('https://workforcenow.adp.com/theme/index.html');
     expect(remembered).toEqual([42]);
+  });
+
+  it('points My Schedule at the route that embeds the Position', () => {
+    expect(ADP_MY_SCHEDULE_URL).toBe(
+      'https://workforcenow.adp.com/theme/index.html#/Myself/MyselfTabTimecardsAttendanceSchCategoryMonthlySchedule',
+    );
   });
 
   it('forces Sync when the sign-in tab reaches Workforce Now, and only that tab', () => {

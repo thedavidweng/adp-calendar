@@ -1,7 +1,7 @@
 import { browser } from 'wxt/browser';
 import { extensionStorage } from '../browser/extension-storage.ts';
 import { CONNECT_GOOGLE_MESSAGE, onboardingStep, type OnboardingMessageKey, type OnboardingStep } from '../onboarding.ts';
-import { ADP_SIGN_IN_URL } from '../reauth.ts';
+import { ADP_MY_SCHEDULE_URL } from '../reauth.ts';
 import {
   acknowledgeAdpSignedIn,
   disconnectExtension,
@@ -84,7 +84,7 @@ ackSignedIn.addEventListener('click', () => {
 });
 
 openSchedule.addEventListener('click', () => {
-  void browser.tabs.create({ url: ADP_SIGN_IN_URL });
+  void browser.tabs.create({ url: ADP_MY_SCHEDULE_URL });
 });
 
 connectGoogle.addEventListener('click', () => {

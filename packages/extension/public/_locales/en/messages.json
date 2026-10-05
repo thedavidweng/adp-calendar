@@ -98,10 +98,10 @@
     "message": "Open My Schedule once"
   },
   "myScheduleBody": {
-    "message": "Open My Schedule in Workforce Now. This page confirms when your Position has been captured."
+    "message": "This opens My Schedule in Workforce Now. Leave it open until this page says your Position was captured."
   },
   "openWorkforceNow": {
-    "message": "Open Workforce Now"
+    "message": "Open My Schedule"
   },
   "positionCaptured": {
     "message": "Position captured."

@@ -1,5 +1,7 @@
 /** Workforce Now entry URL. A signed-out browser is redirected by ADP to its sign-in page and returned here. The sign-in query is minted per request, so it cannot be hardcoded. */
 export const ADP_SIGN_IN_URL = 'https://workforcenow.adp.com/theme/index.html';
+// The Position is only in the URL of the iframe this route embeds, so the home page is not enough.
+export const ADP_MY_SCHEDULE_URL = `${ADP_SIGN_IN_URL}#/Myself/MyselfTabTimecardsAttendanceSchCategoryMonthlySchedule`;
 
 export const SIGN_IN_NOTIFICATION_ID = 'adp-needs-sign-in';
 
