@@ -46,6 +46,7 @@ jobs:
           name: chrome-webstore-package
           path: packages/extension/.output/adp-shifts-*-chrome.zip
           if-no-files-found: error
+          include-hidden-files: true
       - name: Upload store draft
         if: inputs.action != 'build'
         run: pnpm store:upload
