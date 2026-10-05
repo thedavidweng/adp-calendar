@@ -89,10 +89,12 @@ Copy the signed-in user's own ADP Workforce Now work schedule into a dedicated G
 
 Check these categories:
 
+- **Personally identifiable information**: the employee’s ADP Position identifier, kept only in local extension storage to request their own schedule.
+
 - **Website content**: the user's schedule read from ADP Workforce Now (shift times, shift name, department, job, location, pay code, holidays), sent only to the user's own Google Calendar.
 - **Authentication information**: the Google OAuth access token, stored locally and sent only to Google.
 
-Leave the rest unchecked. The extension never reads ADP passwords or copies cookies, and it discards the name, employee ID, and login ID in ADP's response.
+Leave the remaining categories unchecked. The extension never reads ADP passwords or copies cookies, and it discards the name, employee ID, and login ID in ADP's response.
 
 Check all three certifications:
 

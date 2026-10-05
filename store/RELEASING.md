@@ -66,3 +66,13 @@ First-time publishing requires a verified publisher contact email and completed
 listing, privacy disclosures, and distribution settings in the dashboard.
 Calendar OAuth production access and verification are separate from Chrome Web
 Store review.
+
+## Initial release status (2026-10-04)
+
+- Version `0.1.0` is **Pending review**, with automatic publication after approval.
+- Calendar OAuth is in Production; its branding has been verified and published.
+- `calendar.app.created` is non-sensitive; Google confirms data-access verification is not required.
+- Publisher contact email and the `blahaj.uk` domain are verified.
+- The build-only GitHub Actions run passed tests, type checking, and ZIP artifact upload.
+- Publisher credentials are not configured yet: Google API policy acceptance is awaiting the owner's confirmation. The dedicated project is `igneous-ethos-510705-r0`.
+- BWS recovery storage remains pending authentication; the local CLI has no access token and the web vault requires login.

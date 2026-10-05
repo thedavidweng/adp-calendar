@@ -1,13 +1,13 @@
 # Google OAuth verification
 
-`calendar.app.created` is a sensitive scope. Until Google verifies the app, the consent screen shows an "unverified app" warning and the project is capped at 100 users (ADR 0003). This is what the [verification](https://support.google.com/cloud/answer/13463073) needs.
+`calendar.app.created` is **non-sensitive**, as confirmed in Google Auth Platform's Data Access page on 2026-10-04 (ADR 0003). Publish the OAuth app to Production so users beyond the test-user list can connect. The app logo requires branding verification; this scope does not require sensitive-scope verification or a demo video.
 
 ## 1. Own the domain
 
 Google only accepts a homepage and privacy policy on a domain you have verified in [Search Console](https://search.google.com/search-console).
 
 - The site uses `adp-shifts.blahaj.uk`, served by GitHub Pages with a DNS-only CNAME in Cloudflare.
-- Verify ownership of `blahaj.uk` in Search Console with the Google-provided DNS TXT record in Cloudflare.
+- `blahaj.uk` ownership is verified in Search Console through the domain provider.
 - Add `blahaj.uk` under **Branding › Authorized domains**. Keep `chromiumapp.org` for the extension OAuth redirect.
 
 ## 2. OAuth client
@@ -43,9 +43,9 @@ Scope justification:
 ADP Shifts copies the user's ADP Workforce Now work schedule into Google Calendar. It needs to create one secondary calendar named "ADP Shifts" and then create, update, and delete the events in that calendar so it matches the user's schedule. calendar.app.created is the narrowest scope that allows this: the app cannot read or modify the user's primary calendar or any calendar it did not create. All processing happens in the user's browser; no data is sent to any server we operate.
 ```
 
-## 5. Demo video
+## 5. Optional demo video
 
-Upload an unlisted YouTube video (two to three minutes) and paste the link in the verification form and in the store's test instructions. Show, in order:
+A video is not required for this non-sensitive scope. If Google or the store reviewer specifically requests a demonstration, record an unlisted video (two to three minutes). Show, in order:
 
 1. The extension installed in Chrome, with the setup page open.
 2. Signing in to ADP Workforce Now and opening My Schedule. The setup page shows "Position captured."
