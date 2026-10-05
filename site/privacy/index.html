@@ -82,9 +82,15 @@
                 </tr>
                 <tr>
                   <td>Your ADP Position identifier</td>
-                  <td>The address of the My Schedule page in Workforce Now</td>
+                  <td>The address of the Calendar schedule view in Workforce Now</td>
                   <td>To request your schedule, and only yours</td>
                   <td>Local extension storage on your device</td>
+                </tr>
+                <tr>
+                  <td>Your connected Google account email address</td>
+                  <td>Google, after you approve email access</td>
+                  <td>To show which account is connected and keep token renewal on that account</td>
+                  <td>Local extension storage on your device. Cleared when you sign out or disconnect.</td>
                 </tr>
                 <tr>
                   <td>A Google OAuth access token and its expiry time</td>
@@ -113,11 +119,15 @@
 
           <h2>4. Google user data</h2>
           <p>
-            The extension requests one Google permission: <code>https://www.googleapis.com/auth/calendar.app.created</code>. This scope lets an app
+            The extension requests the Google Calendar permission: <code>https://www.googleapis.com/auth/calendar.app.created</code>. This scope lets an app
             create secondary calendars and manage only the calendars and events it created. It does not allow access to your primary calendar or
             to any other calendar in your account.
           </p>
-          <p>With that permission the extension:</p>
+          <p>
+            It also requests <code>https://www.googleapis.com/auth/userinfo.email</code> to show the connected account's email address and
+            keep authorization on that account. It does not request access to Gmail messages, contacts, or other profile information.
+          </p>
+          <p>With the Calendar permission the extension:</p>
           <ul>
             <li>creates one calendar named "ADP Shifts";</li>
             <li>lists, creates, updates, and deletes events in that calendar so it matches your ADP schedule from today onward;</li>
@@ -159,6 +169,8 @@
 
           <h2>7. Keeping and deleting your data</h2>
           <ul>
+            <li><b>Sign out of Google.</b> Revokes Google access and clears the connected email, token, calendar ID and Sync history.
+              Your ADP Position and time-zone settings are kept. The existing Google calendar is not deleted.</li>
             <li>
               <b>Disconnect and clear data.</b> In the extension's Settings, this button revokes the Google token with Google and erases everything
               the extension stored locally.

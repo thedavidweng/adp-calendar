@@ -7,6 +7,7 @@ import { extensionCommand, ONBOARDING_MESSAGE_KEYS, ONBOARDING_PAGE, onboardingS
 import { runExtensionSync } from '../src/run-sync.ts';
 import {
   disconnectExtension,
+  signOutGoogle,
   maybeOpenInstallPage,
   readOnboardingProgress,
   revokeGoogleAccessToken,
@@ -20,6 +21,7 @@ import {
   LAST_SUCCESS_AT_KEY,
   LAST_SUCCESS_SUMMARY_KEY,
   POSITION_KEY,
+  SHIFT_CALENDAR_ID_KEY,
   createTokenStore,
   type KeyValueStorage,
 } from '../src/storage.ts';
@@ -93,25 +95,22 @@ describe('install page', () => {
 });
 
 describe('onboarding steps', () => {
-  it('walks signed-in, then a detected My Schedule visit, then Google, then the first Sync', () => {
+  it('advances only after a detected Calendar visit, then Google and the first Sync', () => {
     const fresh = {
-      signedInAcknowledged: false,
       positionCaptured: false,
       googleConnected: false,
       firstSyncDone: false,
     };
     expect(onboardingStep(fresh)).toBe('adp-signed-in');
     expect(onboardingStep({ ...fresh, positionCaptured: true, googleConnected: true, firstSyncDone: true })).toBe(
-      'adp-signed-in',
+      'done',
     );
-    expect(onboardingStep({ ...fresh, signedInAcknowledged: true })).toBe('my-schedule');
-    expect(onboardingStep({ ...fresh, signedInAcknowledged: true, positionCaptured: true })).toBe('google');
+    expect(onboardingStep({ ...fresh, positionCaptured: true })).toBe('google');
     expect(
-      onboardingStep({ ...fresh, signedInAcknowledged: true, positionCaptured: true, googleConnected: true }),
+      onboardingStep({ ...fresh, positionCaptured: true, googleConnected: true }),
     ).toBe('first-sync');
     expect(
       onboardingStep({
-        signedInAcknowledged: true,
         positionCaptured: true,
         googleConnected: true,
         firstSyncDone: true,
@@ -122,15 +121,12 @@ describe('onboarding steps', () => {
   it('reads each step from stored Position, Google token, and Sync success', async () => {
     const storage = memoryStorage();
     expect(await readOnboardingProgress(storage, 'America/Vancouver')).toMatchObject({
-      signedInAcknowledged: false,
       positionCaptured: false,
       googleConnected: false,
       firstSyncDone: false,
-      timeZoneOverride: '',
       syncTimeZone: 'America/Vancouver',
     });
 
-    storage.items.onboardingSignedIn = true;
     storage.items[POSITION_KEY] = 'POS-0001';
     storage.items[GOOGLE_ACCESS_TOKEN_KEY] = 'ya29.token';
     storage.items[GOOGLE_ACCESS_TOKEN_EXPIRES_KEY] = 1;
@@ -138,7 +134,6 @@ describe('onboarding steps', () => {
     storage.items[LAST_SUCCESS_SUMMARY_KEY] = { created: 1, updated: 0, restored: 0, deleted: 0 };
 
     expect(await readOnboardingProgress(storage, 'America/Vancouver')).toMatchObject({
-      signedInAcknowledged: true,
       positionCaptured: true,
       googleConnected: true,
       firstSyncDone: true,
@@ -289,11 +284,11 @@ describe('onboarding copy', () => {
     for (const key of ONBOARDING_MESSAGE_KEYS) {
       expect(messages[key]?.message, key).toBeTruthy();
     }
-    expect(messages.adpSignedInBody?.message).toContain('already be signed in');
+    expect(messages.adpSignedInBody?.message).toContain('Open ADP Workforce Now');
     expect(messages.adpSignedInBody?.message).toContain('never asks for your ADP password');
-    expect(messages.myScheduleBody?.message).toContain('My Schedule');
-    expect(messages.positionCaptured?.message).toContain('Position');
-    expect(messages.connectGoogleBody?.message).toContain('calendar.app.created');
+    expect(messages.myScheduleBody?.message).toContain('Calendar');
+    expect(messages.positionCaptured?.message).toContain('detected');
+    expect(messages.connectGoogleBody?.message).toContain('email');
     expect(messages.timeZoneHelp?.message).toContain('browser');
     expect(messages.disconnectHelp?.message).toContain('Google');
 
@@ -335,6 +330,7 @@ async function syncedZone(override: string): Promise<{ createdZone: string; shif
     clientId: 'client.apps.googleusercontent.com',
     redirectUri: 'https://abcdefghijklmnop.chromiumapp.org/',
     now: () => new Date(now),
+    readEmail: async () => 'employee@example.test',
     tokens: {
       async load() {
         return { accessToken: 'ya29.token', expiresAt: Date.parse(now) + 120_000 };
@@ -376,3 +372,29 @@ function wallClock(utc: string, timeZone: string): string {
   const value = (type: Intl.DateTimeFormatPartTypes) => parts.find((part) => part.type === type)?.value ?? '';
   return `${value('year')}-${value('month')}-${value('day')} ${value('hour')}:${value('minute')}`;
 }
+
+describe('Google sign out', () => {
+  it('clears account-specific state while preserving the ADP Position and time zone', async () => {
+    const storage = memoryStorage({ [POSITION_KEY]: 'POS-1', [TIME_ZONE_KEY]: 'America/Toronto',
+      [SHIFT_CALENDAR_ID_KEY]: 'old-calendar', [LAST_SUCCESS_AT_KEY]: now,
+      [LAST_SUCCESS_SUMMARY_KEY]: { created: 1, updated: 0, restored: 0, deleted: 0 } });
+    await createTokenStore(storage).save({ accessToken: 'token', expiresAt: 1, email: 'old@example.test' });
+    const revoked: string[] = [];
+    await signOutGoogle(storage, async (token) => { revoked.push(token); });
+    expect(revoked).toEqual(['token']);
+    expect(await createTokenStore(storage).load()).toBeNull();
+    expect(storage.items[SHIFT_CALENDAR_ID_KEY]).toBeNull();
+    expect(storage.items[LAST_SUCCESS_AT_KEY]).toBeNull();
+    expect(storage.items[POSITION_KEY]).toBe('POS-1');
+    expect(storage.items[TIME_ZONE_KEY]).toBe('America/Toronto');
+    expect(storage.items.googleSignedOut).toBe(true);
+  });
+
+  it('reports failed revocation but still signs out locally when a token has expired', async () => {
+    const storage = memoryStorage();
+    await createTokenStore(storage).save({ accessToken: 'expired', expiresAt: 1 });
+    expect(await signOutGoogle(storage, async () => { throw new Error('invalid_token'); })).toBe(false);
+    expect(await createTokenStore(storage).load()).toBeNull();
+    expect(storage.items.googleSignedOut).toBe(true);
+  });
+});

@@ -3,6 +3,7 @@ import type { TokenStore } from './google-auth.ts';
 import type { CalendarIdStore } from './google-calendar.ts';
 
 export const POSITION_KEY = 'positionId';
+export const GOOGLE_EMAIL_KEY = 'googleAccountEmail';
 export const GOOGLE_ACCESS_TOKEN_KEY = 'googleAccessToken';
 export const GOOGLE_ACCESS_TOKEN_EXPIRES_KEY = 'googleAccessTokenExpiresAt';
 export const LAST_SUCCESS_AT_KEY = 'lastSuccessAt';
@@ -148,24 +149,27 @@ function copyAttempt(attempt: SyncAttempt): SyncAttempt {
 export function createTokenStore(storage: KeyValueStorage): TokenStore {
   return {
     async load() {
-      const items = await storage.get([GOOGLE_ACCESS_TOKEN_KEY, GOOGLE_ACCESS_TOKEN_EXPIRES_KEY]);
+      const items = await storage.get([GOOGLE_ACCESS_TOKEN_KEY, GOOGLE_ACCESS_TOKEN_EXPIRES_KEY, GOOGLE_EMAIL_KEY]);
       const accessToken = items[GOOGLE_ACCESS_TOKEN_KEY];
       const expiresAt = items[GOOGLE_ACCESS_TOKEN_EXPIRES_KEY];
       if (typeof accessToken !== 'string' || accessToken.length === 0 || typeof expiresAt !== 'number') {
         return null;
       }
-      return { accessToken, expiresAt };
+      const email = items[GOOGLE_EMAIL_KEY];
+      return { accessToken, expiresAt, ...(typeof email === 'string' ? { email } : {}) };
     },
     async save(token) {
       await storage.set({
         [GOOGLE_ACCESS_TOKEN_KEY]: token.accessToken,
         [GOOGLE_ACCESS_TOKEN_EXPIRES_KEY]: token.expiresAt,
+        [GOOGLE_EMAIL_KEY]: token.email ?? null,
       });
     },
     async clear() {
       await storage.set({
         [GOOGLE_ACCESS_TOKEN_KEY]: null,
         [GOOGLE_ACCESS_TOKEN_EXPIRES_KEY]: null,
+        [GOOGLE_EMAIL_KEY]: null,
       });
     },
   };

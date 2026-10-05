@@ -110,6 +110,27 @@ function blockingCalendar(): ShiftCalendar {
 }
 
 describe('popup Sync outcomes', () => {
+  it('does not reconnect or call ADP after explicit Google sign out', async () => {
+    const forbidden = () => { throw new Error('Signed-out sync must not access accounts'); };
+    const result = await runExtensionSync({
+      clientId: 'client.apps.googleusercontent.com',
+      redirectUri: 'https://abcdefghijklmnop.chromiumapp.org/',
+      now: forbidden,
+      tokens: { load: forbidden, save: forbidden, clear: forbidden },
+      readEmail: forbidden,
+      launch: forbidden,
+      state: state('POS-0001'),
+      history: { getLastSuccess: forbidden, setLastSuccess: forbidden },
+      diagnostics: diagnostics(),
+      adp: { fetchMonthlyView: forbidden },
+      timeZone: 'America/Vancouver',
+      openCalendar: forbidden,
+      forced: true,
+      signedOut: true,
+    });
+    expect(result).toEqual({ ok: false, reason: 'google-auth' });
+  });
+
   it('shows a distinct message for every outcome, and no error for an empty schedule', () => {
     const results: PopupSyncResult[] = [
       { ok: true, calendarId: 'cal-1', createdCalendar: true, created: 1, updated: 0, restored: 0, deleted: 0 },
@@ -133,7 +154,7 @@ describe('popup Sync outcomes', () => {
     expect(new Set(texts).size).toBe(texts.length);
     expect(syncStatusText({ ok: false, reason: 'no-schedule' }, translate)).toBe('No schedule for this period yet.');
     expect(syncStatusText({ ok: false, reason: 'no-schedule' }, translate)).not.toMatch(/error|fail/i);
-    expect(syncStatusText({ ok: false, reason: 'position-invalid' }, translate)).toContain('Open My Schedule again');
+    expect(syncStatusText({ ok: false, reason: 'position-invalid' }, translate)).toContain('Open Calendar in ADP again');
     expect(syncStatusText({ ok: false, reason: 'shape-drift' }, translate)).toContain('ADP changed its data format');
     expect(syncStatusText({ ok: false, reason: 'google-auth' }, translate)).toContain('reconnect Google');
     expect(messages.reportIssue?.message).toBe('Report an issue');
@@ -194,6 +215,7 @@ describe('extension Sync entry', () => {
         clientId: 'client.apps.googleusercontent.com',
         redirectUri: 'https://abcdefghijklmnop.chromiumapp.org/',
         now: () => new Date(now),
+        readEmail: async () => 'employee@example.test',
         tokens: {
           async load() {
             return { accessToken: 'ya29.token', expiresAt: Date.parse(now) + 120_000 };
@@ -257,6 +279,7 @@ describe('extension Sync entry', () => {
       clientId: 'client.apps.googleusercontent.com',
       redirectUri: 'https://abcdefghijklmnop.chromiumapp.org/',
       now: () => new Date(now),
+      readEmail: async () => 'employee@example.test',
       tokens,
       launch() {
         throw new Error('stored Google token should be reused until Calendar rejects it');

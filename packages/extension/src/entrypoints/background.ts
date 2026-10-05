@@ -2,13 +2,15 @@ import { createPageAdpSource } from '@adp-calendar/core/adp-source';
 import { browser } from 'wxt/browser';
 import { defineBackground } from 'wxt/utils/define-background';
 import { extensionStorage } from '../browser/extension-storage.ts';
-import { authorizeGoogle } from '../google-auth.ts';
+import { authorizeGoogle, readGoogleEmail } from '../google-auth.ts';
 import { createGoogleShiftCalendar } from '../google-calendar.ts';
 import { extensionCommand, ONBOARDING_PAGE } from '../onboarding.ts';
 import { ADP_MY_SCHEDULE_URL, openSignInFromNotification, reauthSyncRequest } from '../reauth.ts';
 import { runExtensionSync } from '../run-sync.ts';
-import { maybeOpenInstallPage, timeZoneForSync } from '../settings.ts';
+import { GOOGLE_SIGNED_OUT_KEY, maybeOpenInstallPage, revokeGoogleAccessToken, signOutGoogle, timeZoneForSync } from '../settings.ts';
 import {
+  LAST_SUCCESS_AT_KEY,
+  LAST_SUCCESS_SUMMARY_KEY,
   createCalendarIdStore,
   createReauthTabs,
   createStoredState,
@@ -50,6 +52,11 @@ export default defineBackground(() => {
     const command = extensionCommand(message);
     if (!command) {
       return;
+    }
+    if (command.type === 'sign-out-google') {
+      void enqueue(() => signOutGoogle(extensionStorage(), (token) => revokeGoogleAccessToken(fetch, token)))
+        .then((revoked) => sendResponse({ ok: revoked }), () => sendResponse({ ok: false }));
+      return true;
     }
     if (command.type === 'connect-google') {
       void enqueue(() => connectGoogle()).then(sendResponse, () => {
@@ -134,10 +141,21 @@ async function notifyOutcome(result: { ok: boolean; reason?: string }): Promise<
 
 async function connectGoogle() {
   const storage = extensionStorage();
-  return authorizeGoogle({
+  const previous = await createTokenStore(storage).load();
+  const result = await authorizeGoogle({
     ...googleSession(storage),
     now: Date.now(),
+    interactive: true,
   });
+  if (result.ok) {
+    const connected = await createTokenStore(storage).load();
+    if (previous && previous.email !== connected?.email) {
+      await createCalendarIdStore(storage).clear();
+      await storage.set({ [LAST_SUCCESS_AT_KEY]: null, [LAST_SUCCESS_SUMMARY_KEY]: null });
+    }
+    await storage.set({ [GOOGLE_SIGNED_OUT_KEY]: false });
+  }
+  return result;
 }
 
 function googleSession(storage: ReturnType<typeof extensionStorage>) {
@@ -145,6 +163,7 @@ function googleSession(storage: ReturnType<typeof extensionStorage>) {
     clientId: googleClientId(),
     redirectUri: browser.identity.getRedirectURL(),
     tokens: createTokenStore(storage),
+    readEmail: (token: string) => readGoogleEmail(fetch, token),
     launch: (url: string, interactive: boolean) => browser.identity.launchWebAuthFlow({ url, interactive }),
   };
 }
@@ -153,6 +172,7 @@ async function syncDeps(forced: boolean) {
   const storage = extensionStorage();
   return {
     forced,
+    signedOut: (await storage.get([GOOGLE_SIGNED_OUT_KEY]))[GOOGLE_SIGNED_OUT_KEY] === true,
     ...googleSession(storage),
     now: () => new Date(),
     state: createStoredState(storage),

@@ -10,6 +10,7 @@ export default defineConfig({
     name: '__MSG_extName__',
     description: '__MSG_extDescription__',
     default_locale: 'en',
+    minimum_chrome_version: '127',
     // Pins the extension id (dkjgilecoojembpgookbeepjdlcapchg) so the OAuth redirect
     // https://<id>.chromiumapp.org/ stays stable across unpacked loads. The Chrome Web Store
     // assigns its own id and rejects uploads that carry a key, so store builds leave it out.

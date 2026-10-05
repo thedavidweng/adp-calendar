@@ -2,6 +2,7 @@ import {
   LAST_SUCCESS_AT_KEY,
   LAST_SUCCESS_SUMMARY_KEY,
   POSITION_KEY,
+  SHIFT_CALENDAR_ID_KEY,
   createTokenStore,
   parseLastSuccess,
   type KeyValueStorage,
@@ -9,14 +10,13 @@ import {
 
 export const TIME_ZONE_KEY = 'timeZone';
 export const INSTALL_PAGE_OPENED_KEY = 'installPageOpened';
-export const ONBOARDING_SIGNED_IN_KEY = 'onboardingSignedIn';
+export const GOOGLE_SIGNED_OUT_KEY = 'googleSignedOut';
 
 export interface OnboardingProgress {
-  signedInAcknowledged: boolean;
   positionCaptured: boolean;
   googleConnected: boolean;
+  googleEmail: string;
   firstSyncDone: boolean;
-  timeZoneOverride: string;
   syncTimeZone: string;
 }
 
@@ -54,13 +54,8 @@ export async function saveTimeZone(storage: KeyValueStorage, value: string): Pro
   return 'saved';
 }
 
-export async function acknowledgeAdpSignedIn(storage: KeyValueStorage): Promise<void> {
-  await storage.set({ [ONBOARDING_SIGNED_IN_KEY]: true });
-}
-
 export async function readOnboardingProgress(storage: KeyValueStorage, browserZone: string): Promise<OnboardingProgress> {
   const items = await storage.get([
-    ONBOARDING_SIGNED_IN_KEY,
     POSITION_KEY,
     TIME_ZONE_KEY,
     LAST_SUCCESS_AT_KEY,
@@ -68,12 +63,12 @@ export async function readOnboardingProgress(storage: KeyValueStorage, browserZo
   ]);
   const positionId = items[POSITION_KEY];
   const override = items[TIME_ZONE_KEY];
+  const token = await createTokenStore(storage).load();
   return {
-    signedInAcknowledged: items[ONBOARDING_SIGNED_IN_KEY] === true,
     positionCaptured: typeof positionId === 'string' && positionId.length > 0,
-    googleConnected: (await createTokenStore(storage).load()) !== null,
+    googleConnected: token !== null,
+    googleEmail: token?.email ?? '',
     firstSyncDone: parseLastSuccess(items[LAST_SUCCESS_AT_KEY], items[LAST_SUCCESS_SUMMARY_KEY]) !== null,
-    timeZoneOverride: typeof override === 'string' ? override : '',
     syncTimeZone: effectiveTimeZone(override, browserZone),
   };
 }
@@ -126,4 +121,21 @@ export async function revokeGoogleAccessToken(
   if (!response.ok) {
     throw new Error(`Google revoke failed: ${response.status}`);
   }
+}
+
+/** Signing out keeps ADP and time-zone settings, but never reuses another account's calendar. */
+export async function signOutGoogle(storage: KeyValueStorage, revoke: (token: string) => Promise<void>): Promise<boolean> {
+  const token = await createTokenStore(storage).load();
+  let revoked = true;
+  if (token) {
+    try { await revoke(token.accessToken); } catch { revoked = false; }
+  }
+  await createTokenStore(storage).clear();
+  await storage.set({
+    [GOOGLE_SIGNED_OUT_KEY]: true,
+    [SHIFT_CALENDAR_ID_KEY]: null,
+    [LAST_SUCCESS_AT_KEY]: null,
+    [LAST_SUCCESS_SUMMARY_KEY]: null,
+  });
+  return revoked;
 }

@@ -66,6 +66,7 @@ describe('Position capture', () => {
       [POSITION_KEY]: 'POS-0001',
       googleAccessToken: 'ya29.token',
       googleAccessTokenExpiresAt: 10,
+      googleAccountEmail: null,
     });
     expect(JSON.stringify(storage.items)).not.toMatch(/cookie|password|SMSESSION/i);
   });

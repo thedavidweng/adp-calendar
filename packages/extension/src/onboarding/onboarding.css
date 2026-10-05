@@ -45,7 +45,7 @@ p {
 }
 
 button,
-input {
+select {
   font: inherit;
 }
 
@@ -54,7 +54,7 @@ button {
   padding: 8px 12px;
 }
 
-input {
+select {
   display: block;
   width: 100%;
   box-sizing: border-box;
@@ -74,3 +74,14 @@ section {
 #disconnect {
   margin-top: 16px;
 }
+
+[hidden] { display: none !important; }
+.calendar-guide { margin: 16px 0; }
+.adp-navigation { display: flex; align-items: center; gap: 20px; padding: 16px; color: white; background: #151e50; border-radius: 8px; }
+.adp-wordmark { margin-right: auto; font-size: 24px; font-weight: 700; font-style: italic; }
+.nav-item { display: grid; justify-items: center; gap: 6px; font-size: 13px; }
+.nav-item > span:first-child { font-size: 24px; }
+.nav-calendar { border: 2px solid #b8ceff; border-radius: 10px; padding: 8px 12px; background: #ffffff20; }
+.nav-calendar svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2; }
+figcaption { margin-top: 8px; color: #5f6368; font-size: 14px; }
+#google-connected { font-weight: 600; overflow-wrap: anywhere; }

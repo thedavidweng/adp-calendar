@@ -13,11 +13,20 @@
         <li id="step-adp" data-step="adp-signed-in">
           <h2 id="adp-title"></h2>
           <p id="adp-body"></p>
-          <button id="ack-signed-in" type="button"></button>
+          <button id="open-adp" type="button"></button>
+          <p id="adp-confirmed" hidden></p>
         </li>
         <li id="step-schedule" data-step="my-schedule">
           <h2 id="schedule-title"></h2>
           <p id="schedule-body"></p>
+          <figure class="calendar-guide" aria-labelledby="calendar-guide-caption">
+            <div class="adp-navigation" role="img" id="calendar-guide">
+              <span class="adp-wordmark">ADP</span>
+              <span class="nav-item"><span aria-hidden="true">✓</span><span id="things-to-do-nav"></span></span>
+              <span class="nav-item nav-calendar"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M8 2v6M16 2v6M4 11h16"/></svg><span id="calendar-nav"></span></span>
+            </div>
+            <figcaption id="calendar-guide-caption"></figcaption>
+          </figure>
           <button id="open-schedule" type="button"></button>
           <p id="position-captured" hidden></p>
         </li>
@@ -26,6 +35,7 @@
           <p id="google-body"></p>
           <button id="connect-google" type="button"></button>
           <p id="google-connected" hidden></p>
+          <button id="google-sign-out" type="button" hidden></button>
           <p id="google-status" role="status"></p>
         </li>
         <li id="step-sync" data-step="first-sync">
@@ -40,9 +50,9 @@
       <section>
         <h2 id="settings-title"></h2>
         <label id="time-zone-label" for="time-zone"></label>
-        <input id="time-zone" name="time-zone" type="text" autocomplete="off" spellcheck="false" />
+        <select id="time-zone" name="time-zone"></select>
         <p id="time-zone-help"></p>
-        <p id="time-zone-using"></p>
+        <button id="use-browser-time-zone" type="button"></button>
         <button id="save-time-zone" type="button"></button>
         <p id="time-zone-status" role="status"></p>
         <p id="disconnect-help"></p>

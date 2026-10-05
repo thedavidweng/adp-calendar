@@ -35,8 +35,9 @@ ADP Shifts copies your ADP Workforce Now schedule into a Google Calendar of its 
 
 HOW IT WORKS
 1. Sign in to ADP Workforce Now in this browser, the way you already do.
-2. Open My Schedule once so the extension learns which Position is yours.
-3. Connect Google. The extension creates a calendar named "ADP Shifts" and fills it with your shifts.
+2. Open Calendar in ADP once so the extension learns which Position is yours.
+3. Connect Google and check the displayed email. Use "Sign out of Google" to switch accounts.
+4. Click "Open extension and sync now" to create the "ADP Shifts" calendar and fill it with your shifts.
 
 After that it checks once a day and when you visit Workforce Now, and runs a Sync whenever the last one is more than three and a half days old. Press "Sync now" in the toolbar any time.
 
@@ -51,6 +52,7 @@ WHAT YOU GET
 PRIVATE BY DESIGN
 • Never asks for your ADP password. It uses the session already in your browser and never copies your cookies.
 • Uses Google's narrowest Calendar permission (calendar.app.created). It can manage only the calendar it creates and cannot see or change your other calendars.
+• Reads your Google email only to identify the connected account in setup.
 • No servers. Your schedule goes from ADP to Google directly from your browser.
 • No analytics, no ads, no tracking. Nothing is sold or shared.
 • "Disconnect and clear data" revokes Google access and erases everything the extension stored.
@@ -74,12 +76,12 @@ Copy the signed-in user's own ADP Workforce Now work schedule into a dedicated G
 | Permission | Justification |
 | --- | --- |
 | `alarms` | Schedules one daily check so the user's calendar stays in sync without them opening the extension. A Sync runs only when the last successful one is more than 3.5 days old. |
-| `storage` | Saves the user's ADP Position identifier, the ID of the calendar it created, a short-lived Google access token, the time zone override, and the last Sync status in local extension storage. Nothing is stored remotely. |
+| `storage` | Saves the user's ADP Position identifier, the ID of the calendar it created, a short-lived Google access token, the connected Google email, the time zone override, and the last Sync status in local extension storage. Nothing is stored remotely. |
 | `notifications` | Tells the user when their ADP session has ended and a sign-in is needed, and reports the result of a Sync. One notification per event, never promotional. |
-| `identity` | Runs Google OAuth with `chrome.identity.launchWebAuthFlow` to get permission for the `calendar.app.created` scope, so the extension can create and manage its own calendar. |
-| Host `https://workforcenow.adp.com/*` | Reads the signed-in user's schedule from the same JSON endpoint the Workforce Now My Schedule page uses, and runs a content script there to learn the user's Position from the schedule page address. |
-| Host `https://www.googleapis.com/*` | Calls the Google Calendar API to create the ADP Shifts calendar and to list, create, update, and delete events in it. |
-| Host `https://oauth2.googleapis.com/*` | Revokes the Google access token when the user chooses "Disconnect and clear data". |
+| `identity` | Runs Google OAuth with `chrome.identity.launchWebAuthFlow` to get permission for the `calendar.app.created` scope, so the extension can create and manage its own calendar. The non-sensitive userinfo.email scope identifies the connected account in setup. |
+| Host `https://workforcenow.adp.com/*` | Reads the signed-in user's schedule from the same JSON endpoint the Workforce Now Calendar schedule view uses, and runs a content script there to learn the user's Position from the schedule page address. |
+| Host `https://www.googleapis.com/*` | Reads the connected account email from Google userinfo and calls the Google Calendar API to create the ADP Shifts calendar and to list, create, update, and delete events in it. |
+| Host `https://oauth2.googleapis.com/*` | Revokes the Google access token when the user chooses "Sign out of Google" or "Disconnect and clear data". |
 
 ### Remote code
 
@@ -89,7 +91,7 @@ Copy the signed-in user's own ADP Workforce Now work schedule into a dedicated G
 
 Check these categories:
 
-- **Personally identifiable information**: the employee’s ADP Position identifier, kept only in local extension storage to request their own schedule.
+- **Personally identifiable information**: the connected Google email, shown only in setup, and the employee’s ADP Position identifier, kept only in local extension storage to request their own schedule.
 
 - **Website content**: the user's schedule read from ADP Workforce Now (shift times, shift name, department, job, location, pay code, holidays), sent only to the user's own Google Calendar.
 - **Authentication information**: the Google OAuth access token, stored locally and sent only to Google.
@@ -117,7 +119,7 @@ This extension needs an ADP Workforce Now employee account, which the review tea
 
 What to verify without an ADP account:
 1. Install the extension. The setup page opens automatically.
-2. "Connect Google" opens Google's consent screen asking only for "calendar.app.created" (make and manage secondary calendars the app creates).
+2. "Connect Google" opens Google's consent screen asking for "calendar.app.created" and "userinfo.email" (make and manage secondary calendars the app creates).
 3. After consent, open Google Calendar: no calendar is touched until a Sync runs.
 4. Settings > "Disconnect and clear data" revokes the token and clears local storage.
 

@@ -7,6 +7,7 @@ export async function runExtensionSync(deps: {
   redirectUri: string;
   now: () => Date;
   tokens: TokenStore;
+  readEmail(accessToken: string): Promise<string>;
   launch(url: string, interactive: boolean): Promise<string | null | undefined>;
   state: StateStore;
   history: SyncHistory;
@@ -15,7 +16,9 @@ export async function runExtensionSync(deps: {
   timeZone: string;
   openCalendar(accessToken: string): ShiftCalendar;
   forced: boolean;
+  signedOut?: boolean;
 }): Promise<SyncResult | { ok: false; reason: 'missing-client' }> {
+  if (deps.signedOut) return { ok: false, reason: 'google-auth' };
   const now = deps.now();
   if (!deps.forced) {
     const last = await deps.history.getLastSuccess();
@@ -29,6 +32,7 @@ export async function runExtensionSync(deps: {
     redirectUri: deps.redirectUri,
     now: now.getTime(),
     tokens: deps.tokens,
+    readEmail: deps.readEmail,
     launch: deps.launch,
   });
   if (!auth.ok) {

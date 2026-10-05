@@ -14,23 +14,39 @@
   "syncCreatedSummary": {
     "message": "Created ADP Shifts. $CREATED$ created, $UPDATED$ updated, $RESTORED$ restored, $DELETED$ deleted.",
     "placeholders": {
-      "created": { "content": "$1" },
-      "updated": { "content": "$2" },
-      "restored": { "content": "$3" },
-      "deleted": { "content": "$4" }
+      "created": {
+        "content": "$1"
+      },
+      "updated": {
+        "content": "$2"
+      },
+      "restored": {
+        "content": "$3"
+      },
+      "deleted": {
+        "content": "$4"
+      }
     }
   },
   "syncSummary": {
     "message": "ADP Shifts: $CREATED$ created, $UPDATED$ updated, $RESTORED$ restored, $DELETED$ deleted.",
     "placeholders": {
-      "created": { "content": "$1" },
-      "updated": { "content": "$2" },
-      "restored": { "content": "$3" },
-      "deleted": { "content": "$4" }
+      "created": {
+        "content": "$1"
+      },
+      "updated": {
+        "content": "$2"
+      },
+      "restored": {
+        "content": "$3"
+      },
+      "deleted": {
+        "content": "$4"
+      }
     }
   },
   "noPosition": {
-    "message": "Open My Schedule once so the extension can learn your Position."
+    "message": "Open Calendar in ADP once so the extension can find your work schedule."
   },
   "needsSignIn": {
     "message": "ADP needs you to sign in again"
@@ -42,7 +58,7 @@
     "message": "No schedule for this period yet."
   },
   "positionInvalid": {
-    "message": "Open My Schedule again so the extension can learn your Position."
+    "message": "Open Calendar in ADP again so the extension can find your work schedule."
   },
   "shapeDrift": {
     "message": "ADP changed its data format. Nothing was changed."
@@ -89,28 +105,25 @@
     "message": "Sign in to Workforce Now in this browser"
   },
   "adpSignedInBody": {
-    "message": "You must already be signed in to ADP Workforce Now in this browser. This extension never asks for your ADP password."
-  },
-  "ackSignedIn": {
-    "message": "I am signed in"
+    "message": "Open ADP Workforce Now and sign in with your work account. This extension never asks for your ADP password. ADP access is confirmed when your Calendar loads."
   },
   "myScheduleTitle": {
-    "message": "Open My Schedule once"
+    "message": "Open Calendar in ADP"
   },
   "myScheduleBody": {
-    "message": "This opens My Schedule in Workforce Now. Leave it open until this page says your Position was captured."
+    "message": "Click Calendar in the top-right navigation, then open your work schedule. Keep that page open until your schedule is detected here."
   },
   "openWorkforceNow": {
-    "message": "Open My Schedule"
+    "message": "Open ADP Calendar"
   },
   "positionCaptured": {
-    "message": "Position captured."
+    "message": "Schedule detected. ADP is ready."
   },
   "connectGoogleTitle": {
     "message": "Connect Google"
   },
   "connectGoogleBody": {
-    "message": "Allow one consent screen so this extension can create a calendar it owns. The permission is calendar.app.created."
+    "message": "Choose the Google account where you want your shifts. ADP Shifts can manage only calendars it creates, and reads your email so you can check which account is connected."
   },
   "connectGoogle": {
     "message": "Connect Google"
@@ -119,16 +132,21 @@
     "message": "Google was not connected. Try again."
   },
   "googleConnected": {
-    "message": "Google connected."
+    "message": "Connected as $EMAIL$.",
+    "placeholders": {
+      "email": {
+        "content": "$1"
+      }
+    }
   },
   "firstSyncTitle": {
     "message": "Run the first Sync"
   },
   "firstSyncBody": {
-    "message": "Sync copies your schedule from today onward into the Shift Calendar."
+    "message": "Open the extension popup and start syncing your schedule from today onward. Progress and the result appear in the popup."
   },
   "runFirstSync": {
-    "message": "Sync now"
+    "message": "Open extension and sync now"
   },
   "firstSyncDone": {
     "message": "First Sync done."
@@ -140,18 +158,10 @@
     "message": "Settings"
   },
   "timeZoneLabel": {
-    "message": "Time zone override"
+    "message": "Time zone"
   },
   "timeZoneHelp": {
-    "message": "Leave blank to use this browser's time zone. The next Sync uses this zone for event times."
-  },
-  "timeZoneUsing": {
-    "message": "Next Sync uses $ZONE$.",
-    "placeholders": {
-      "zone": {
-        "content": "$1"
-      }
-    }
+    "message": "Your browser’s time zone is selected automatically. Choose a different zone if your work schedule uses one. The next Sync uses the selected zone."
   },
   "saveTimeZone": {
     "message": "Save time zone"
@@ -160,7 +170,7 @@
     "message": "Time zone saved. It applies on the next Sync."
   },
   "timeZoneInvalid": {
-    "message": "Enter an IANA time zone such as America/Toronto, or leave blank."
+    "message": "Choose a valid time zone from the list."
   },
   "disconnect": {
     "message": "Disconnect and clear data"
@@ -183,11 +193,54 @@
   "lastSync": {
     "message": "Last successful Sync $WHEN$: $CREATED$ created, $UPDATED$ updated, $RESTORED$ restored, $DELETED$ deleted.",
     "placeholders": {
-      "when": { "content": "$1" },
-      "created": { "content": "$2" },
-      "updated": { "content": "$3" },
-      "restored": { "content": "$4" },
-      "deleted": { "content": "$5" }
+      "when": {
+        "content": "$1"
+      },
+      "created": {
+        "content": "$2"
+      },
+      "updated": {
+        "content": "$3"
+      },
+      "restored": {
+        "content": "$4"
+      },
+      "deleted": {
+        "content": "$5"
+      }
     }
+  },
+  "openAdpSignIn": {
+    "message": "Open ADP and sign in"
+  },
+  "adpAccessConfirmed": {
+    "message": "ADP access confirmed."
+  },
+  "calendarGuide": {
+    "message": "Illustration of the ADP navigation bar, with Calendar highlighted beside Things to Do."
+  },
+  "calendarGuideCaption": {
+    "message": "Look for the calendar icon at the top right of ADP. Navigation may vary by employer."
+  },
+  "calendarNav": {
+    "message": "Calendar"
+  },
+  "thingsToDoNav": {
+    "message": "Things to Do"
+  },
+  "googleSignOut": {
+    "message": "Sign out of Google"
+  },
+  "googleSignedOut": {
+    "message": "Google signed out. Connect again to choose another account. Your ADP and time-zone settings are kept."
+  },
+  "googleSignOutFailed": {
+    "message": "Signed out on this device. Google could not revoke access; you can also remove ADP Shifts in your Google Account connections."
+  },
+  "googleReconnect": {
+    "message": "Reconnect Google to confirm your account email."
+  },
+  "useBrowserTimeZone": {
+    "message": "Use browser time zone"
   }
 }

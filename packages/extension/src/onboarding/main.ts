@@ -1,9 +1,8 @@
 import { browser } from 'wxt/browser';
 import { extensionStorage } from '../browser/extension-storage.ts';
-import { CONNECT_GOOGLE_MESSAGE, onboardingStep, type OnboardingMessageKey, type OnboardingStep } from '../onboarding.ts';
+import { CONNECT_GOOGLE_MESSAGE, SIGN_OUT_GOOGLE_MESSAGE, onboardingStep, type OnboardingMessageKey, type OnboardingStep } from '../onboarding.ts';
 import { ADP_MY_SCHEDULE_URL } from '../reauth.ts';
 import {
-  acknowledgeAdpSignedIn,
   disconnectExtension,
   readOnboardingProgress,
   revokeGoogleAccessToken,
@@ -12,12 +11,15 @@ import {
 } from '../settings.ts';
 import { createTokenStore } from '../storage.ts';
 import { isPopupSyncResult, syncStatusText, type MessageKey } from '../sync-status.ts';
-import { SYNC_NOW_MESSAGE } from '../sync-trigger.ts';
+import { openSyncPopup } from '../open-sync-popup.ts';
 
 const title = required('#title');
 const adpTitle = required('#adp-title');
 const adpBody = required('#adp-body');
-const ackSignedIn = requiredButton('#ack-signed-in');
+const openAdp = requiredButton('#open-adp');
+const adpConfirmed = required('#adp-confirmed');
+const googleSignOut = requiredButton('#google-sign-out');
+const useBrowserTimeZone = requiredButton('#use-browser-time-zone');
 const scheduleTitle = required('#schedule-title');
 const scheduleBody = required('#schedule-body');
 const openSchedule = requiredButton('#open-schedule');
@@ -35,9 +37,8 @@ const syncStatus = required('#sync-status');
 const done = required('#done');
 const settingsTitle = required('#settings-title');
 const timeZoneLabel = required('#time-zone-label');
-const timeZoneInput = requiredInput('#time-zone');
+const timeZoneInput = requiredSelect('#time-zone');
 const timeZoneHelp = required('#time-zone-help');
-const timeZoneUsing = required('#time-zone-using');
 const saveTimeZoneButton = requiredButton('#save-time-zone');
 const timeZoneStatus = required('#time-zone-status');
 const disconnectHelp = required('#disconnect-help');
@@ -59,7 +60,14 @@ document.title = translate('onboardingTitle');
 title.textContent = document.title;
 adpTitle.textContent = translate('adpSignedInTitle');
 adpBody.textContent = translate('adpSignedInBody');
-ackSignedIn.textContent = translate('ackSignedIn');
+openAdp.textContent = translate('openAdpSignIn');
+adpConfirmed.textContent = translate('adpAccessConfirmed');
+googleSignOut.textContent = translate('googleSignOut');
+useBrowserTimeZone.textContent = translate('useBrowserTimeZone');
+required('#calendar-guide').setAttribute('aria-label', translate('calendarGuide'));
+required('#calendar-guide-caption').textContent = translate('calendarGuideCaption');
+required('#calendar-nav').textContent = translate('calendarNav');
+required('#things-to-do-nav').textContent = translate('thingsToDoNav');
 scheduleTitle.textContent = translate('myScheduleTitle');
 scheduleBody.textContent = translate('myScheduleBody');
 openSchedule.textContent = translate('openWorkforceNow');
@@ -67,7 +75,6 @@ positionCaptured.textContent = translate('positionCaptured');
 googleTitle.textContent = translate('connectGoogleTitle');
 googleBody.textContent = translate('connectGoogleBody');
 connectGoogle.textContent = translate('connectGoogle');
-googleConnected.textContent = translate('googleConnected');
 syncTitle.textContent = translate('firstSyncTitle');
 syncBody.textContent = translate('firstSyncBody');
 firstSync.textContent = translate('runFirstSync');
@@ -80,8 +87,8 @@ saveTimeZoneButton.textContent = translate('saveTimeZone');
 disconnectHelp.textContent = translate('disconnectHelp');
 disconnectButton.textContent = translate('disconnect');
 
-ackSignedIn.addEventListener('click', () => {
-  void acknowledgeAdpSignedIn(storage).then(refresh);
+openAdp.addEventListener('click', () => {
+  void browser.tabs.create({ url: 'https://workforcenow.adp.com/' });
 });
 
 openSchedule.addEventListener('click', () => {
@@ -95,7 +102,7 @@ connectGoogle.addEventListener('click', () => {
     .sendMessage({ type: CONNECT_GOOGLE_MESSAGE })
     .then((result: unknown) => {
       if (isConnected(result)) {
-        googleStatus.textContent = translate('googleConnected');
+        googleStatus.textContent = '';
         return;
       }
       googleStatus.textContent = connectFailureText(result);
@@ -109,24 +116,39 @@ connectGoogle.addEventListener('click', () => {
     });
 });
 
+googleSignOut.addEventListener('click', () => {
+  googleSignOut.disabled = true;
+  void browser.runtime.sendMessage({ type: SIGN_OUT_GOOGLE_MESSAGE })
+    .then((result: { ok: boolean }) => {
+      googleStatus.textContent = translate(result.ok ? 'googleSignedOut' : 'googleSignOutFailed');
+    })
+    .catch(() => { googleStatus.textContent = translate('googleSignOutFailed'); })
+    .finally(() => { googleSignOut.disabled = false; void refresh(); });
+});
+
 firstSync.addEventListener('click', () => {
   firstSync.disabled = true;
   syncStatus.textContent = translate('syncing');
-  void browser.runtime
-    .sendMessage({ type: SYNC_NOW_MESSAGE })
-    .then((result: unknown) => {
-      syncStatus.textContent = syncStatusText(isPopupSyncResult(result) ? result : failed(), translate);
-    })
-    .catch(() => {
-      syncStatus.textContent = syncStatusText(failed(), translate);
-    })
-    .finally(() => {
-      firstSync.disabled = false;
-      void refresh();
-    });
+  void openSyncPopup(browser.action)
+    .then(() => { syncStatus.textContent = ''; })
+    .catch(() => { syncStatus.textContent = syncStatusText(failed(), translate); })
+    .finally(() => { firstSync.disabled = false; void refresh(); });
 });
 
-timeZoneInput.addEventListener('input', () => {
+const zones = new Set([browserZone(), ...Intl.supportedValuesOf('timeZone')]);
+for (const zone of [...zones].sort()) {
+  timeZoneInput.add(new Option(zone.replaceAll('_', ' '), zone));
+}
+
+useBrowserTimeZone.addEventListener('click', () => {
+  void saveTimeZone(storage, '').then(() => {
+    timeZoneDirty = false;
+    timeZoneStatus.textContent = translate('timeZoneSaved');
+    return refresh();
+  });
+});
+
+timeZoneInput.addEventListener('change', () => {
   timeZoneDirty = true;
 });
 
@@ -191,17 +213,23 @@ function render(step: OnboardingStep, progress: OnboardingProgress): void {
       item.removeAttribute('aria-current');
     }
   }
-  ackSignedIn.hidden = step !== 'adp-signed-in';
-  openSchedule.hidden = step !== 'my-schedule';
-  connectGoogle.hidden = step !== 'google';
-  firstSync.hidden = step !== 'first-sync';
+  openAdp.hidden = progress.positionCaptured;
+  adpConfirmed.hidden = !progress.positionCaptured;
+  openSchedule.hidden = progress.positionCaptured;
   positionCaptured.hidden = !progress.positionCaptured;
   googleConnected.hidden = !progress.googleConnected;
+  googleConnected.textContent = progress.googleEmail ? translate('googleConnected', progress.googleEmail) : translate('googleReconnect');
+  googleSignOut.hidden = !progress.googleConnected;
+  connectGoogle.hidden = progress.googleConnected && progress.googleEmail !== '';
+  firstSync.hidden = !progress.positionCaptured || !progress.googleConnected || progress.googleEmail === '';
   syncDone.hidden = !progress.firstSyncDone;
   done.hidden = step !== 'done';
-  timeZoneUsing.textContent = translate('timeZoneUsing', progress.syncTimeZone);
   if (!timeZoneDirty) {
-    timeZoneInput.value = progress.timeZoneOverride;
+    if (!zones.has(progress.syncTimeZone)) {
+      zones.add(progress.syncTimeZone);
+      timeZoneInput.add(new Option(progress.syncTimeZone.replaceAll('_', ' '), progress.syncTimeZone));
+    }
+    timeZoneInput.value = progress.syncTimeZone;
   }
 }
 
@@ -236,9 +264,9 @@ function requiredButton(selector: string): HTMLButtonElement {
   return element;
 }
 
-function requiredInput(selector: string): HTMLInputElement {
+function requiredSelect(selector: string): HTMLSelectElement {
   const element = document.querySelector(selector);
-  if (!(element instanceof HTMLInputElement)) {
+  if (!(element instanceof HTMLSelectElement)) {
     throw new Error(`Onboarding page is missing ${selector}`);
   }
   return element;

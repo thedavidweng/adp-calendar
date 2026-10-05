@@ -1,23 +1,20 @@
 import { syncRequestFor } from './sync-trigger.ts';
 
 export const ONBOARDING_PAGE = '/onboarding.html';
+export const SIGN_OUT_GOOGLE_MESSAGE = 'sign-out-google';
 export const CONNECT_GOOGLE_MESSAGE = 'connect-google';
 
-export type OnboardingStep = 'adp-signed-in' | 'my-schedule' | 'google' | 'first-sync' | 'done';
+export type OnboardingStep = 'adp-signed-in' | 'google' | 'first-sync' | 'done';
 
 export interface OnboardingFlags {
-  signedInAcknowledged: boolean;
   positionCaptured: boolean;
   googleConnected: boolean;
   firstSyncDone: boolean;
 }
 
 export function onboardingStep(flags: OnboardingFlags): OnboardingStep {
-  if (!flags.signedInAcknowledged) {
-    return 'adp-signed-in';
-  }
   if (!flags.positionCaptured) {
-    return 'my-schedule';
+    return 'adp-signed-in';
   }
   if (!flags.googleConnected) {
     return 'google';
@@ -28,7 +25,7 @@ export function onboardingStep(flags: OnboardingFlags): OnboardingStep {
   return 'done';
 }
 
-export type ExtensionCommand = { type: 'connect-google' } | { type: 'sync'; forced: boolean };
+export type ExtensionCommand = { type: 'connect-google' } | { type: 'sign-out-google' } | { type: 'sync'; forced: boolean };
 
 function isConnectGoogle(message: unknown): boolean {
   return typeof message === 'object' && message !== null && (message as { type?: unknown }).type === CONNECT_GOOGLE_MESSAGE;
@@ -37,6 +34,9 @@ function isConnectGoogle(message: unknown): boolean {
 export function extensionCommand(message: unknown): ExtensionCommand | null {
   if (isConnectGoogle(message)) {
     return { type: 'connect-google' };
+  }
+  if (typeof message === 'object' && message !== null && (message as { type?: unknown }).type === SIGN_OUT_GOOGLE_MESSAGE) {
+    return { type: 'sign-out-google' };
   }
   const sync = syncRequestFor({ message });
   if (!sync) {
@@ -49,7 +49,17 @@ export const ONBOARDING_MESSAGE_KEYS = [
   'onboardingTitle',
   'adpSignedInTitle',
   'adpSignedInBody',
-  'ackSignedIn',
+  'openAdpSignIn',
+  'adpAccessConfirmed',
+  'calendarGuide',
+  'calendarGuideCaption',
+  'calendarNav',
+  'thingsToDoNav',
+  'googleSignOut',
+  'googleSignedOut',
+  'googleSignOutFailed',
+  'googleReconnect',
+  'useBrowserTimeZone',
   'myScheduleTitle',
   'myScheduleBody',
   'openWorkforceNow',
@@ -67,7 +77,6 @@ export const ONBOARDING_MESSAGE_KEYS = [
   'settingsTitle',
   'timeZoneLabel',
   'timeZoneHelp',
-  'timeZoneUsing',
   'saveTimeZone',
   'timeZoneSaved',
   'timeZoneInvalid',

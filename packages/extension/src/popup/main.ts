@@ -64,7 +64,7 @@ settings.addEventListener('click', () => {
   void browser.tabs.create({ url: browser.runtime.getURL(ONBOARDING_PAGE) });
 });
 void showLastSuccess();
-button.addEventListener('click', () => {
+const syncNow = (): void => {
   button.disabled = true;
   status.textContent = translate('syncing');
   void browser.runtime
@@ -79,7 +79,10 @@ button.addEventListener('click', () => {
       button.disabled = false;
       void showLastSuccess();
     });
-});
+};
+
+button.addEventListener('click', syncNow);
+if (new URL(location.href).searchParams.get('sync') === '1') syncNow();
 
 function failed(): PopupSyncResult {
   return { ok: false, reason: 'sync-failed' };

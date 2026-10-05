@@ -1,6 +1,6 @@
 # Google Calendar via launchWebAuthFlow and the calendar.app.created scope
 
-The extension writes only to a Shift Calendar it creates, using the `calendar.app.created` scope, so it can never read or delete the user's other calendars and Sync may freely delete anything it finds there. It authorizes with `chrome.identity.launchWebAuthFlow` and silent `prompt=none` renewal instead of `getAuthToken`, because the tool targets any Tenant's employees and `getAuthToken` works only in Google Chrome, not other Chromium browsers. No refresh token or client secret is stored.
+The extension writes only to a Shift Calendar it creates, using the `calendar.app.created` scope, so it can never read or delete the user's other calendars and Sync may freely delete anything it finds there. It authorizes with `chrome.identity.launchWebAuthFlow` and silent `prompt=none` renewal instead of `getAuthToken`, because the tool targets any Tenant's employees and `getAuthToken` works only in Google Chrome, not other Chromium browsers. No refresh token or client secret is stored. The non-sensitive `userinfo.email` scope identifies the connected Google account in setup and supplies a login hint for renewal. Explicit connection shows the account chooser; renewal rejects a different account. Signing out clears the token, email, calendar ID, and Sync history while retaining the ADP Position and time zone.
 
 ## Consequences
 
