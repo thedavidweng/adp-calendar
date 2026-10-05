@@ -14,7 +14,8 @@
     "build:extension": "pnpm --filter @adp-calendar/extension build",
     "zip:extension": "pnpm --filter @adp-calendar/extension zip:store",
     "store:upload": "chrome-webstore-upload upload --source packages/extension/.output/chrome-mv3",
-    "store:publish": "chrome-webstore-upload publish"
+    "store:publish": "chrome-webstore-upload publish",
+    "store:status": "node scripts/store-status.mjs"
   },
   "devDependencies": {
     "@types/node": "^24.9.1",

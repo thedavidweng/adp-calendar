@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       action:
-        description: Build a package, upload a draft, or upload and submit for review
+        description: Build, verify publisher access, upload a draft, or submit for review
         type: choice
-        options: [build, upload, publish]
+        options: [build, verify, upload, publish]
         default: upload
   push:
     tags: ['v*']
@@ -47,8 +47,17 @@ jobs:
           path: packages/extension/.output/adp-shifts-*-chrome.zip
           if-no-files-found: error
           include-hidden-files: true
-      - name: Upload store draft
+      - name: Verify publisher access
         if: inputs.action != 'build'
+        run: pnpm store:status
+        env:
+          EXTENSION_ID: ${{ vars.CWS_EXTENSION_ID }}
+          PUBLISHER_ID: ${{ vars.CWS_PUBLISHER_ID }}
+          CLIENT_ID: ${{ secrets.CWS_CLIENT_ID }}
+          CLIENT_SECRET: ${{ secrets.CWS_CLIENT_SECRET }}
+          REFRESH_TOKEN: ${{ secrets.CWS_REFRESH_TOKEN }}
+      - name: Upload store draft
+        if: startsWith(github.ref, 'refs/tags/v') || inputs.action == 'upload' || inputs.action == 'publish'
         run: pnpm store:upload
         env:
           EXTENSION_ID: ${{ vars.CWS_EXTENSION_ID }}

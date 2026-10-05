@@ -22,15 +22,17 @@ GitHub Actions variables:
 | `CWS_PUBLISHER_ID` | `f5afb768-56ba-4b77-b399-60e85312ad0e` |
 | `CWS_EXTENSION_ID` | `obccfkjmkfhljjnamibiiolagcpmjklj` |
 
-Keep the three publisher credentials together in a BWS project named
-`adp-calendar` for recovery. Do not commit credential files or export tokens to
-terminal logs.
+The three publisher credentials are also stored in BWS's existing `Recovery`
+project, with the prefix `ADP_CALENDAR_` (for example,
+`ADP_CALENDAR_CWS_REFRESH_TOKEN`). The free account's three project slots are
+already occupied. Do not commit credential files or export tokens to terminal logs.
 
 ## Release
 
 1. Increment `packages/extension/package.json` before each new store upload.
 2. Commit and push the change to `main`.
 3. Run the **Chrome Web Store** workflow with `build` to verify the package,
+   `verify` to also check publisher authorization and the current store status,
    `upload` to save a draft, or `publish` to upload and submit for review.
    Alternatively, push a tag named `v<extension-version>` to upload and submit.
 4. Download the ZIP from the workflow artifact when a manual upload is needed.
@@ -67,12 +69,13 @@ listing, privacy disclosures, and distribution settings in the dashboard.
 Calendar OAuth production access and verification are separate from Chrome Web
 Store review.
 
-## Initial release status (2026-10-04)
+## Initial release status (2026-10-05)
 
-- Version `0.1.0` is **Pending review**, with automatic publication after approval.
+- Version `0.1.0` is **Published**, with 100% distribution confirmed by Store API v2.
 - Calendar OAuth is in Production; its branding has been verified and published.
 - `calendar.app.created` is non-sensitive; Google confirms data-access verification is not required.
 - Publisher contact email and the `blahaj.uk` domain are verified.
 - The build-only GitHub Actions run passed tests, type checking, and ZIP artifact upload.
-- Publisher credentials are not configured yet: Google API policy acceptance is awaiting the owner's confirmation. The dedicated project is `igneous-ethos-510705-r0`.
-- BWS recovery storage remains pending authentication; the local CLI has no access token and the web vault requires login.
+- Publisher credentials are configured in GitHub Secrets and BWS. The dedicated Google project is `igneous-ethos-510705-r0`, with a Desktop OAuth client and Production publishing status.
+- Refresh-token exchange and authenticated `fetchStatus` succeeded. Use the workflow's `verify` action to check these without uploading a new version.
+- Public listing: https://chromewebstore.google.com/detail/adp-shifts/obccfkjmkfhljjnamibiiolagcpmjklj
