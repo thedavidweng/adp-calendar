@@ -74,7 +74,7 @@ Copy the signed-in user's own ADP Workforce Now work schedule into a dedicated G
 | Permission | Justification |
 | --- | --- |
 | `alarms` | Schedules one daily check so the user's calendar stays in sync without them opening the extension. A Sync runs only when the last successful one is more than 3.5 days old. |
-| `storage` | Saves the user's ADP Position identifier, a short-lived Google access token, the time zone override, and the last Sync status in local extension storage. Nothing is stored remotely. |
+| `storage` | Saves the user's ADP Position identifier, the ID of the calendar it created, a short-lived Google access token, the time zone override, and the last Sync status in local extension storage. Nothing is stored remotely. |
 | `notifications` | Tells the user when their ADP session has ended and a sign-in is needed, and reports the result of a Sync. One notification per event, never promotional. |
 | `identity` | Runs Google OAuth with `chrome.identity.launchWebAuthFlow` to get permission for the `calendar.app.created` scope, so the extension can create and manage its own calendar. |
 | Host `https://workforcenow.adp.com/*` | Reads the signed-in user's schedule from the same JSON endpoint the Workforce Now My Schedule page uses, and runs a content script there to learn the user's Position from the schedule page address. |

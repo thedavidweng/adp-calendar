@@ -1,5 +1,6 @@
 import type { LastSuccess, StateStore, SyncAttempt, SyncDiagnostics, SyncHistory, SyncSummary } from '@adp-calendar/core';
 import type { TokenStore } from './google-auth.ts';
+import type { CalendarIdStore } from './google-calendar.ts';
 
 export const POSITION_KEY = 'positionId';
 export const GOOGLE_ACCESS_TOKEN_KEY = 'googleAccessToken';
@@ -9,6 +10,7 @@ export const LAST_SUCCESS_SUMMARY_KEY = 'lastSuccessSummary';
 export const SIGN_IN_NOTIFIED_KEY = 'signInNotified';
 export const SYNC_ATTEMPTS_KEY = 'syncAttempts';
 export const REAUTH_TAB_ID_KEY = 'reauthTabId';
+export const SHIFT_CALENDAR_ID_KEY = 'shiftCalendarId';
 
 export interface KeyValueStorage {
   get(keys: readonly string[]): Promise<Record<string, unknown>>;
@@ -165,6 +167,21 @@ export function createTokenStore(storage: KeyValueStorage): TokenStore {
         [GOOGLE_ACCESS_TOKEN_KEY]: null,
         [GOOGLE_ACCESS_TOKEN_EXPIRES_KEY]: null,
       });
+    },
+  };
+}
+
+export function createCalendarIdStore(storage: KeyValueStorage): CalendarIdStore {
+  return {
+    async load() {
+      const value = (await storage.get([SHIFT_CALENDAR_ID_KEY]))[SHIFT_CALENDAR_ID_KEY];
+      return typeof value === 'string' && value.length > 0 ? value : null;
+    },
+    async save(calendarId) {
+      await storage.set({ [SHIFT_CALENDAR_ID_KEY]: calendarId });
+    },
+    async clear() {
+      await storage.set({ [SHIFT_CALENDAR_ID_KEY]: null });
     },
   };
 }

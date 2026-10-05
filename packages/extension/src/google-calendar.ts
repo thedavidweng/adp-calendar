@@ -9,18 +9,6 @@ import { ShiftCalendarError } from '@adp-calendar/core/ports';
 
 const API = 'https://www.googleapis.com/calendar/v3';
 
-interface CalendarListItem {
-  id?: string;
-  summary?: string;
-  description?: string;
-  timeZone?: string;
-}
-
-interface CalendarListResponse {
-  items?: CalendarListItem[];
-  nextPageToken?: string;
-}
-
 interface GoogleWhen {
   date?: string;
   dateTime?: string;
@@ -42,28 +30,49 @@ interface GoogleEventList {
   nextPageToken?: string;
 }
 
-export function createGoogleShiftCalendar(fetchImpl: typeof fetch, accessToken: string): ShiftCalendar {
+export interface CalendarIdStore {
+  load(): Promise<string | null>;
+  save(calendarId: string): Promise<void>;
+  clear(): Promise<void>;
+}
+
+interface CalendarResource {
+  id?: string;
+  summary?: string;
+  description?: string;
+  timeZone?: string;
+}
+
+/**
+ * calendar.app.created cannot list the user's calendars, so the Shift Calendar is found again by the id
+ * remembered when it was created, not by searching for its name.
+ */
+export function createGoogleShiftCalendar(
+  fetchImpl: typeof fetch,
+  accessToken: string,
+  calendarIds: CalendarIdStore,
+): ShiftCalendar {
   return {
     async findByName(name) {
-      let pageToken: string | undefined;
-      do {
-        const params = new URLSearchParams({ maxResults: '250' });
-        if (pageToken) {
-          params.set('pageToken', pageToken);
-        }
-        const body = (await requestJson(
+      const calendarId = await calendarIds.load();
+      if (!calendarId) {
+        return null;
+      }
+      let body: CalendarResource;
+      try {
+        body = (await requestJson(
           fetchImpl,
           accessToken,
-          `/users/me/calendarList?${params}`,
-        )) as CalendarListResponse;
-        for (const item of body.items ?? []) {
-          if (item.summary === name && item.id) {
-            return record(item.id, name, item.description ?? '', item.timeZone ?? '');
-          }
+          `/calendars/${encodeURIComponent(calendarId)}`,
+        )) as CalendarResource;
+      } catch (error) {
+        if (error instanceof ShiftCalendarError && error.reason === 'calendar-missing') {
+          await calendarIds.clear();
+          return null;
         }
-        pageToken = body.nextPageToken;
-      } while (pageToken);
-      return null;
+        throw error;
+      }
+      return record(calendarId, body.summary ?? name, body.description ?? '', body.timeZone ?? '');
     },
     async create(calendar) {
       const body = (await requestJson(fetchImpl, accessToken, '/calendars', {
@@ -77,6 +86,7 @@ export function createGoogleShiftCalendar(fetchImpl: typeof fetch, accessToken: 
       if (!body.id) {
         throw new ShiftCalendarError('google-error');
       }
+      await calendarIds.save(body.id);
       return record(body.id, calendar.name, calendar.description, calendar.timeZone);
     },
     async list(calendarId, range) {

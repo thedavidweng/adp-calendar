@@ -5,10 +5,17 @@ import { extensionStorage } from '../browser/extension-storage.ts';
 import { authorizeGoogle } from '../google-auth.ts';
 import { createGoogleShiftCalendar } from '../google-calendar.ts';
 import { extensionCommand, ONBOARDING_PAGE } from '../onboarding.ts';
-import { ADP_SIGN_IN_URL, openSignInFromNotification, reauthSyncRequest } from '../reauth.ts';
+import { ADP_MY_SCHEDULE_URL, openSignInFromNotification, reauthSyncRequest } from '../reauth.ts';
 import { runExtensionSync } from '../run-sync.ts';
 import { maybeOpenInstallPage, timeZoneForSync } from '../settings.ts';
-import { createReauthTabs, createStoredState, createSyncDiagnostics, createSyncHistory, createTokenStore } from '../storage.ts';
+import {
+  createCalendarIdStore,
+  createReauthTabs,
+  createStoredState,
+  createSyncDiagnostics,
+  createSyncHistory,
+  createTokenStore,
+} from '../storage.ts';
 import { noticeForClick, noticeForSyncResult, REPORT_ISSUE_URL } from '../sync-status.ts';
 import { createSyncQueue, ensureDailySyncAlarm, syncRequestFor } from '../sync-trigger.ts';
 
@@ -88,7 +95,7 @@ export default defineBackground(() => {
       return;
     }
     if (notice.click === 'open-workforce') {
-      void browser.tabs.create({ url: ADP_SIGN_IN_URL });
+      void browser.tabs.create({ url: ADP_MY_SCHEDULE_URL });
       return;
     }
     if (notice.click === 'report-issue') {
@@ -156,7 +163,8 @@ async function syncDeps(forced: boolean) {
       return { redirected: response.redirected, url: response.url, text: await response.text() };
     }),
     timeZone: await timeZoneForSync(storage, Intl.DateTimeFormat().resolvedOptions().timeZone),
-    openCalendar: (accessToken: string) => createGoogleShiftCalendar(fetch, accessToken),
+    openCalendar: (accessToken: string) =>
+      createGoogleShiftCalendar(fetch, accessToken, createCalendarIdStore(storage)),
   };
 }
 
