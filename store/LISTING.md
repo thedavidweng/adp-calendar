@@ -79,7 +79,7 @@ Copy the signed-in user's own ADP Workforce Now work schedule into a dedicated G
 | `storage` | Saves the user's ADP Position identifier, the ID of the calendar it created, a short-lived Google access token, the connected Google email, the time zone override, and the last Sync status in local extension storage. Nothing is stored remotely. |
 | `notifications` | Tells the user when their ADP session has ended and a sign-in is needed, and reports the result of a Sync. One notification per event, never promotional. |
 | `identity` | Runs Google OAuth with `chrome.identity.launchWebAuthFlow` to get permission for the `calendar.app.created` scope, so the extension can create and manage its own calendar. The non-sensitive userinfo.email scope identifies the connected account in setup. |
-| Host `https://workforcenow.adp.com/*` | Reads the signed-in user's schedule from the same JSON endpoint the Workforce Now Calendar schedule view uses, and runs a content script there to learn the user's Position from the schedule page address. |
+| Host `https://workforcenow.adp.com/*` | Reads the signed-in user's schedule from the same JSON endpoint the Workforce Now Calendar schedule view uses, and runs a content script there to learn the selected Position from Calendar’s own Position lookup or the legacy schedule page address. |
 | Host `https://www.googleapis.com/*` | Reads the connected account email from Google userinfo and calls the Google Calendar API to create the ADP Shifts calendar and to list, create, update, and delete events in it. |
 | Host `https://oauth2.googleapis.com/*` | Revokes the Google access token when the user chooses "Sign out of Google" or "Disconnect and clear data". |
 
