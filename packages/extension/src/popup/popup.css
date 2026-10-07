@@ -91,7 +91,35 @@ p {
   cursor: progress;
 }
 
+.export {
+  display: block;
+  width: 100%;
+  height: 34px;
+  margin-top: 8px;
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--ink);
+  font: 600 13px/1 var(--font);
+  cursor: pointer;
+  transition: background 0.15s, transform 0.15s;
+}
+
+.export:hover {
+  background: var(--wash);
+}
+
+.export:active {
+  transform: translateY(1px);
+}
+
+.export:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
 .sync:focus-visible,
+.export:focus-visible,
 .settings:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
@@ -124,7 +152,8 @@ p {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .sync {
+  .sync,
+  .export {
     transition: none;
   }
 }

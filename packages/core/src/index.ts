@@ -1,6 +1,7 @@
 export { buildMonthlyViewUrl, createPageAdpSource } from './adp-source.ts';
 export type { PageResponse } from './adp-source.ts';
 export { exportSchedule } from './export-schedule.ts';
+export { calendarPositionRequest, captureCalendarPosition } from './calendar-position.ts';
 export { readPositionId } from './position.ts';
 export {
   SHIFT_CALENDAR_DESCRIPTION,

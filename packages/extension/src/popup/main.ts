@@ -1,6 +1,9 @@
+import { createPageAdpSource } from '@adp-calendar/core/adp-source';
 import { browser } from 'wxt/browser';
 import { extensionStorage } from '../browser/extension-storage.ts';
-import { createSyncHistory } from '../storage.ts';
+import { exportShowsReportIssue, exportStatusText, runExtensionExport, type ExportMessageKey } from '../export-ics.ts';
+import { timeZoneForSync } from '../settings.ts';
+import { createStoredState, createSyncHistory } from '../storage.ts';
 import {
   lastSuccessText,
   isPopupSyncResult,
@@ -21,8 +24,10 @@ const button = document.querySelector('#sync');
 const status = document.querySelector('#status');
 const lastSync = document.querySelector('#last-sync');
 const settings = document.querySelector('#settings');
+const exportButton = document.querySelector('#export');
 if (
   !(button instanceof HTMLButtonElement) ||
+  !(exportButton instanceof HTMLButtonElement) ||
   !(status instanceof HTMLElement) ||
   !(lastSync instanceof HTMLElement) ||
   !(settings instanceof HTMLButtonElement)
@@ -32,7 +37,7 @@ if (
 
 const history = createSyncHistory(extensionStorage());
 
-function translate(key: MessageKey, substitution?: string | string[]): string {
+function translate(key: MessageKey | ExportMessageKey, substitution?: string | string[]): string {
   return substitution === undefined ? browser.i18n.getMessage(key) : browser.i18n.getMessage(key, substitution);
 }
 
@@ -46,8 +51,12 @@ const showLastSuccess = async (): Promise<void> => {
 };
 
 const renderStatus = (result: PopupSyncResult): void => {
-  status.textContent = syncStatusText(result, translate);
-  if (!showsReportIssue(result)) {
+  showStatus(syncStatusText(result, translate), showsReportIssue(result));
+};
+
+const showStatus = (text: string, reportIssue: boolean): void => {
+  status.textContent = text;
+  if (!reportIssue) {
     return;
   }
   const link = document.createElement('a');
@@ -61,6 +70,29 @@ const renderStatus = (result: PopupSyncResult): void => {
 };
 
 button.textContent = translate('syncNow');
+exportButton.textContent = translate('exportIcs');
+exportButton.addEventListener('click', () => {
+  exportButton.disabled = true;
+  exportButton.textContent = translate('exporting');
+  const storage = extensionStorage();
+  void runExtensionExport({
+    adp: createPageAdpSource(async (url) => {
+      const response = await fetch(url, { credentials: 'include' });
+      return { redirected: response.redirected, url: response.url, text: await response.text() };
+    }),
+    state: createStoredState(storage),
+    now: () => new Date(),
+    timeZone: () => timeZoneForSync(storage, Intl.DateTimeFormat().resolvedOptions().timeZone),
+  })
+    .then((result) => {
+      if (result.ok) downloadText(result.filename, result.ics);
+      showStatus(exportStatusText(result, translate), exportShowsReportIssue(result));
+    })
+    .finally(() => {
+      exportButton.disabled = false;
+      exportButton.textContent = translate('exportIcs');
+    });
+});
 settings.textContent = translate('settings');
 settings.addEventListener('click', () => {
   void browser.tabs.create({ url: browser.runtime.getURL(ONBOARDING_PAGE) });
@@ -88,4 +120,15 @@ if (new URL(location.href).searchParams.get('sync') === '1') syncNow();
 
 function failed(): PopupSyncResult {
   return { ok: false, reason: 'sync-failed' };
+}
+
+function downloadText(filename: string, body: string): void {
+  const url = URL.createObjectURL(new Blob([body], { type: 'text/calendar;charset=utf-8' }));
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  document.body.append(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }

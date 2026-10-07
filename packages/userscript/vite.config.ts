@@ -13,7 +13,7 @@ export default defineConfig({
         name: 'ADP Schedule Export',
         namespace: 'https://github.com/thedavidweng/adp-calendar',
         version,
-        description: 'Export the signed-in ADP Workforce Now schedule to an ICS file.',
+        description: 'Adds an Export .ics button to ADP Workforce Now that downloads your own schedule as a calendar file. No Google account, no servers.',
         author: 'Davy',
         license: 'MIT',
         icon: 'https://adp-shifts.blahaj.uk/assets/icon.svg',

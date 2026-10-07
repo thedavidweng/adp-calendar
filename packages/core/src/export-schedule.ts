@@ -27,5 +27,6 @@ export async function exportSchedule(input: ExportInput): Promise<ExportResult> 
     ok: true,
     ics: shiftsToIcs(parsed.shifts, parsed.holidays, input.timeZone),
     filename: 'adp-shifts.ics',
+    shiftCount: parsed.shifts.length,
   };
 }

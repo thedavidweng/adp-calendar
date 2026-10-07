@@ -6,6 +6,8 @@
   "exports": {
     ".": "./src/index.ts",
     "./adp-source": "./src/adp-source.ts",
+    "./calendar-position": "./src/calendar-position.ts",
+    "./export": "./src/export-schedule.ts",
     "./ports": "./src/ports.ts",
     "./position": "./src/position.ts",
     "./sync": "./src/sync-schedule.ts"

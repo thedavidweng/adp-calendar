@@ -58,6 +58,7 @@ describe('Export ADP outcomes', () => {
     expect(result.ics).toContain('BEGIN:VCALENDAR');
     expect(result.ics).toContain('UID:adpsshiftobj-1@adp-schedule-export');
     expect(result.filename).toBe('adp-shifts.ics');
+    expect(result.shiftCount).toBe(result.ics.match(/UID:adpsshiftobj-/g)?.length);
   });
 
   it('treats a redirect to the ADP sign-in host as a dead session and does not build an ICS', async () => {

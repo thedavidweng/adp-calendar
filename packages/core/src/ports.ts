@@ -72,7 +72,7 @@ export interface SyncDiagnostics {
 }
 
 export type ExportResult =
-  | { ok: true; ics: string; filename: string }
+  | { ok: true; ics: string; filename: string; shiftCount: number }
   | { ok: false; reason: 'no-position' }
   | { ok: false; reason: 'session-dead' }
   | { ok: false; reason: 'no-schedule' }

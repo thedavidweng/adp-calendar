@@ -11,6 +11,29 @@
   "syncing": {
     "message": "Syncing…"
   },
+  "exportIcs": {
+    "message": "Export .ics"
+  },
+  "exporting": {
+    "message": "Exporting…"
+  },
+  "exportDone": {
+    "message": "Downloaded $FILE$ with your schedule ($COUNT$ shifts). Import it into any calendar app.",
+    "placeholders": {
+      "file": {
+        "content": "$1"
+      },
+      "count": {
+        "content": "$2"
+      }
+    }
+  },
+  "exportSessionDead": {
+    "message": "Sign in to ADP, then try Export .ics again."
+  },
+  "exportFailed": {
+    "message": "Could not export. Try again."
+  },
   "syncCreatedSummary": {
     "message": "Created ADP Shifts. $CREATED$ created, $UPDATED$ updated, $RESTORED$ restored, $DELETED$ deleted.",
     "placeholders": {
