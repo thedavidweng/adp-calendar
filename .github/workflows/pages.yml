@@ -26,6 +26,13 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - uses: actions/configure-pages@v5
+      # Pages serves every file with a fixed 10-minute cache, so a content hash in the
+      # stylesheet URL keeps new HTML from rendering with a stale site.css.
+      - name: Version stylesheet links
+        run: |
+          v=$(sha256sum site/assets/site.css | cut -c1-10)
+          sed -i "s#assets/site.css\"#assets/site.css?v=$v\"#" site/*.html site/*/index.html
+          ! grep -rL "site.css?v=$v" site/*.html site/*/index.html | grep .
       - uses: actions/upload-pages-artifact@v4
         with:
           path: site
