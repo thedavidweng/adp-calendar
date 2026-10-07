@@ -7,10 +7,14 @@
     <link rel="stylesheet" href="../popup/popup.css" />
   </head>
   <body>
-    <button id="sync" type="button"></button>
-    <p id="last-sync"></p>
-    <p id="status" role="status"></p>
-    <button id="settings" type="button"></button>
+    <header class="head">
+      <img src="/icon-48.png" alt="" width="24" height="24" />
+      <span id="name"></span>
+      <button id="settings" class="settings" type="button"></button>
+    </header>
+    <button id="sync" class="sync" type="button"></button>
+    <p id="last-sync" class="meta"></p>
+    <p id="status" class="status" role="status"></p>
     <script type="module" src="../popup/main.ts"></script>
   </body>
 </html>

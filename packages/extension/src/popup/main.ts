@@ -14,6 +14,8 @@ import { ONBOARDING_PAGE } from '../onboarding.ts';
 import { SYNC_NOW_MESSAGE } from '../sync-trigger.ts';
 
 document.title = browser.i18n.getMessage('extName');
+const name = document.querySelector('#name');
+if (name) name.textContent = document.title;
 
 const button = document.querySelector('#sync');
 const status = document.querySelector('#status');

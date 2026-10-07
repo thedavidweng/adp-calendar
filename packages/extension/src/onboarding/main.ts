@@ -204,9 +204,17 @@ async function refresh(): Promise<void> {
 }
 
 function render(step: OnboardingStep, progress: OnboardingProgress): void {
+  const googleConfirmed = progress.googleConnected && progress.googleEmail !== '';
+  const complete: Record<string, boolean> = {
+    'adp-signed-in': progress.positionCaptured,
+    'my-schedule': progress.positionCaptured,
+    google: googleConfirmed,
+    'first-sync': progress.firstSyncDone,
+  };
   for (const item of document.querySelectorAll<HTMLElement>('#steps > li')) {
     const current = item.dataset.step === step;
     item.classList.toggle('current', current);
+    item.classList.toggle('complete', complete[item.dataset.step ?? ''] === true);
     if (current) {
       item.setAttribute('aria-current', 'step');
     } else {

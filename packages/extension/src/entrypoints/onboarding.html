@@ -7,57 +7,89 @@
     <link rel="stylesheet" href="../onboarding/onboarding.css" />
   </head>
   <body>
+    <div class="backdrop" aria-hidden="true"></div>
     <main>
-      <h1 id="title"></h1>
-      <ol id="steps">
+      <header class="hero">
+        <img class="hero__icon" src="/icon-128.png" alt="" width="56" height="56" />
+        <h1 id="title"></h1>
+      </header>
+      <ol id="steps" class="steps">
         <li id="step-adp" data-step="adp-signed-in">
-          <h2 id="adp-title"></h2>
-          <p id="adp-body"></p>
-          <button id="open-adp" type="button"></button>
-          <p id="adp-confirmed" hidden></p>
+          <span class="badge" aria-hidden="true"><span class="badge__n">1</span><svg class="badge__check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg></span>
+          <div class="step__body">
+            <h2 id="adp-title"></h2>
+            <p id="adp-body"></p>
+          </div>
+          <div class="step__aside">
+            <button id="open-adp" class="btn" type="button"></button>
+            <p id="adp-confirmed" class="state" hidden></p>
+          </div>
         </li>
         <li id="step-schedule" data-step="my-schedule">
-          <h2 id="schedule-title"></h2>
-          <p id="schedule-body"></p>
-          <figure class="calendar-guide" aria-labelledby="calendar-guide-caption">
-            <div class="adp-navigation" role="img" id="calendar-guide">
-              <span class="adp-wordmark">ADP</span>
-              <span class="nav-item"><span aria-hidden="true">✓</span><span id="things-to-do-nav"></span></span>
-              <span class="nav-item nav-calendar"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M8 2v6M16 2v6M4 11h16"/></svg><span id="calendar-nav"></span></span>
-            </div>
-            <figcaption id="calendar-guide-caption"></figcaption>
-          </figure>
-          <button id="open-schedule" type="button"></button>
-          <p id="position-captured" hidden></p>
+          <span class="badge" aria-hidden="true"><span class="badge__n">2</span><svg class="badge__check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg></span>
+          <div class="step__body">
+            <h2 id="schedule-title"></h2>
+            <p id="schedule-body"></p>
+            <figure class="calendar-guide" aria-labelledby="calendar-guide-caption">
+              <div class="adp-navigation" role="img" id="calendar-guide">
+                <span class="adp-wordmark">ADP</span>
+                <span class="nav-item"><span aria-hidden="true">✓</span><span id="things-to-do-nav"></span></span>
+                <span class="nav-item nav-calendar"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M8 2v6M16 2v6M4 11h16"/></svg><span id="calendar-nav"></span></span>
+              </div>
+              <figcaption id="calendar-guide-caption"></figcaption>
+            </figure>
+          </div>
+          <div class="step__aside">
+            <button id="open-schedule" class="btn" type="button"></button>
+            <p id="position-captured" class="state" hidden></p>
+          </div>
         </li>
         <li id="step-google" data-step="google">
-          <h2 id="google-title"></h2>
-          <p id="google-body"></p>
-          <button id="connect-google" type="button"></button>
-          <p id="google-connected" hidden></p>
-          <button id="google-sign-out" type="button" hidden></button>
-          <p id="google-status" role="status"></p>
+          <span class="badge" aria-hidden="true"><span class="badge__n">3</span><svg class="badge__check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg></span>
+          <div class="step__body">
+            <h2 id="google-title"></h2>
+            <p id="google-body"></p>
+            <p id="google-status" class="status" role="status"></p>
+          </div>
+          <div class="step__aside">
+            <button id="connect-google" class="btn" type="button"></button>
+            <p id="google-connected" class="state" hidden></p>
+            <button id="google-sign-out" class="link" type="button" hidden></button>
+          </div>
         </li>
         <li id="step-sync" data-step="first-sync">
-          <h2 id="sync-title"></h2>
-          <p id="sync-body"></p>
-          <button id="first-sync" type="button"></button>
-          <p id="sync-done" hidden></p>
-          <p id="sync-status" role="status"></p>
+          <span class="badge" aria-hidden="true"><span class="badge__n">4</span><svg class="badge__check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg></span>
+          <div class="step__body">
+            <h2 id="sync-title"></h2>
+            <p id="sync-body"></p>
+            <p id="sync-status" class="status" role="status"></p>
+          </div>
+          <div class="step__aside">
+            <button id="first-sync" class="btn" type="button"></button>
+            <p id="sync-done" class="state" hidden></p>
+          </div>
         </li>
       </ol>
-      <p id="done" hidden></p>
-      <section>
+      <p id="done" class="done" hidden></p>
+      <section class="settings">
         <h2 id="settings-title"></h2>
-        <label id="time-zone-label" for="time-zone"></label>
-        <select id="time-zone" name="time-zone"></select>
-        <p id="time-zone-help"></p>
-        <button id="use-browser-time-zone" type="button"></button>
-        <button id="save-time-zone" type="button"></button>
-        <p id="time-zone-status" role="status"></p>
-        <p id="disconnect-help"></p>
-        <button id="disconnect" type="button"></button>
-        <p id="disconnect-status" role="status"></p>
+        <div class="field">
+          <label id="time-zone-label" for="time-zone"></label>
+          <select id="time-zone" name="time-zone"></select>
+          <p id="time-zone-help" class="help"></p>
+          <div class="row">
+            <button id="save-time-zone" class="btn btn--primary btn--sm" type="button"></button>
+            <button id="use-browser-time-zone" class="btn btn--sm" type="button"></button>
+            <p id="time-zone-status" class="status" role="status"></p>
+          </div>
+        </div>
+        <div class="field field--danger">
+          <p id="disconnect-help" class="help"></p>
+          <div class="row">
+            <button id="disconnect" class="btn btn--danger btn--sm" type="button"></button>
+            <p id="disconnect-status" class="status" role="status"></p>
+          </div>
+        </div>
       </section>
     </main>
     <script type="module" src="../onboarding/main.ts"></script>
