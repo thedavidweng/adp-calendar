@@ -79,3 +79,24 @@ Store review.
 - Publisher credentials are configured in GitHub Secrets and BWS. The dedicated Google project is `igneous-ethos-510705-r0`, with a Desktop OAuth client and Production publishing status.
 - Refresh-token exchange and authenticated `fetchStatus` succeeded. Use the workflow's `verify` action to check these without uploading a new version.
 - Public listing: https://chromewebstore.google.com/detail/adp-shifts/obccfkjmkfhljjnamibiiolagcpmjklj
+
+## Greasy Fork releases
+
+Tampermonkey userscript (`@adp-calendar/userscript`) releases are automated via GitHub Actions and Greasy Fork's official Webhook integration:
+
+- **Public Script**: https://greasyfork.org/scripts/599050-adp-schedule-export (Script ID `599050`)
+- **GitHub Webhook**:
+  - Webhook URL: `https://api.greasyfork.org/zh-CN/users/1002560-thedavidweng/webhook`
+  - Content type: `application/json`
+  - Active: `true` (Webhook ID `693367771`)
+  - Triggers: `release` and `push`
+- **Sync Target**:
+  - The script syncs from the GitHub Release asset URL:
+    `https://github.com/thedavidweng/adp-calendar/releases/latest/download/adp-schedule-export.user.js`
+- **Automated CI Flow**:
+  - When a tag `v*` is pushed, `.github/workflows/chrome-webstore.yml`:
+    - Builds the userscript with `@version` matching the tag.
+    - Creates/updates the GitHub Release with `adp-schedule-export.user.js`.
+    - Submits the extension package to Chrome Web Store.
+  - GitHub fires the `release` webhook event to Greasy Fork.
+  - Greasy Fork pulls the latest release asset and updates the script listing automatically.

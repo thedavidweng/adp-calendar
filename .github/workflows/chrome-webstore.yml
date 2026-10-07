@@ -12,7 +12,7 @@ on:
     tags: ['v*']
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: chrome-webstore
@@ -47,6 +47,31 @@ jobs:
           path: packages/extension/.output/adp-shifts-*-chrome.zip
           if-no-files-found: error
           include-hidden-files: true
+      - name: Build userscript
+        run: |
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            export TAG_VERSION="${GITHUB_REF_NAME#v}"
+          fi
+          pnpm build:userscript
+      - uses: actions/upload-artifact@v4
+        with:
+          name: userscript-package
+          path: packages/userscript/dist/adp-schedule-export.user.js
+          if-no-files-found: error
+      - name: Publish GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" \
+            packages/userscript/dist/adp-schedule-export.user.js \
+            packages/extension/.output/adp-shifts-*-chrome.zip \
+            --title "ADP Shifts $GITHUB_REF_NAME" \
+            --generate-notes || \
+          gh release upload "$GITHUB_REF_NAME" \
+            packages/userscript/dist/adp-schedule-export.user.js \
+            packages/extension/.output/adp-shifts-*-chrome.zip \
+            --clobber
       - name: Verify publisher access
         if: inputs.action != 'build'
         run: pnpm store:status

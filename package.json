@@ -12,6 +12,7 @@
     "type-check": "tsc --noEmit && pnpm --filter @adp-calendar/extension typecheck",
     "build": "pnpm -r --if-present build",
     "build:extension": "pnpm --filter @adp-calendar/extension build",
+    "build:userscript": "pnpm --filter @adp-calendar/userscript build",
     "zip:extension": "pnpm --filter @adp-calendar/extension zip:store",
     "store:upload": "chrome-webstore-upload upload --source packages/extension/.output/chrome-mv3",
     "store:publish": "chrome-webstore-upload publish",

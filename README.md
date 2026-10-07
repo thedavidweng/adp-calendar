@@ -4,17 +4,22 @@
 
 <p align="center">Your ADP Workforce Now schedule, kept current in a Google Calendar of its own.<br />No passwords. No servers. Nothing else touched.</p>
 
-<p align="center"><a href="https://thedavidweng.github.io/adp-calendar/">Website</a> · <a href="https://thedavidweng.github.io/adp-calendar/privacy/">Privacy</a> · <a href="https://github.com/thedavidweng/adp-calendar/issues">Issues</a></p>
+<p align="center"><a href="https://chromewebstore.google.com/detail/adp-shifts/obccfkjmkfhljjnamibiiolagcpmjklj">Chrome Web Store</a> · <a href="https://greasyfork.org/scripts/599050-adp-schedule-export">Greasy Fork</a> · <a href="https://adp-shifts.blahaj.uk/">Website</a> · <a href="https://adp-shifts.blahaj.uk/privacy/">Privacy</a> · <a href="https://github.com/thedavidweng/adp-calendar/issues">Issues</a></p>
 
 ![ADP Shifts](store/images/promo-marquee-1400x560.png)
+
+## Install
+
+- **Chrome Extension**: [ADP Shifts on the Chrome Web Store](https://chromewebstore.google.com/detail/adp-shifts/obccfkjmkfhljjnamibiiolagcpmjklj)
+- **Userscript (Tampermonkey)**: [ADP Schedule Export on Greasy Fork](https://greasyfork.org/scripts/599050-adp-schedule-export)
 
 ## Packages
 
 | Path | What it is |
 | --- | --- |
 | `packages/core` | Schedule parsing, ICS export, and Sync reconciliation. No browser APIs. |
-| `packages/extension` | Manifest V3 extension (WXT) that syncs to a Google Calendar it owns. |
-| `packages/userscript` | Tampermonkey userscript that downloads an ICS file. |
+| `packages/extension` | Manifest V3 extension (WXT) that syncs to a Google Calendar it owns ([Chrome Web Store](https://chromewebstore.google.com/detail/adp-shifts/obccfkjmkfhljjnamibiiolagcpmjklj)). |
+| `packages/userscript` | Tampermonkey userscript that downloads an ICS file ([Greasy Fork](https://greasyfork.org/scripts/599050-adp-schedule-export), [source](packages/userscript)). |
 | `site` | The website and privacy policy, deployed to GitHub Pages. |
 | `store` | Chrome Web Store listing copy, OAuth verification notes, and image sources. |
 
