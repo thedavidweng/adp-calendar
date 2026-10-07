@@ -32,7 +32,7 @@
           <div class="kicker">Legal</div>
           <h1>Privacy Policy</h1>
           <div class="doc__meta">
-            <span>Effective October 4, 2026</span>
+            <span>Effective October 7, 2026</span>
             <span>Applies to the ADP Shifts extension, the ADP Schedule Export userscript, and this website</span>
           </div>
         </div>
@@ -60,6 +60,8 @@
           <p>
             ADP Shifts has a single purpose: to copy the signed-in employee's work schedule from ADP Workforce Now into a dedicated Google
             Calendar named "ADP Shifts", and to keep that calendar up to date. Everything described below exists only to provide that feature.
+            When you press <b>Export .ics</b>, the extension also builds the same schedule into an <code>.ics</code> file in your browser and
+            downloads it to your device. The file is not uploaded anywhere, and exporting does not use Google.
           </p>
 
           <h2>3. Information the extension handles</h2>
@@ -77,8 +79,8 @@
                 <tr>
                   <td>Your schedule: shift dates and times, shift name, department, job, location, pay code, shift status, and employer holidays</td>
                   <td>ADP Workforce Now, using the session already in your browser</td>
-                  <td>To create matching events in your ADP Shifts calendar</td>
-                  <td>Processed in memory, then written to your own Google account. Not stored by the extension.</td>
+                  <td>To create matching events in your ADP Shifts calendar, or to build an <code>.ics</code> file when you press Export .ics</td>
+                  <td>Processed in memory, then written to your own Google account or saved as a file on your device. Not stored by the extension.</td>
                 </tr>
                 <tr>
                   <td>Your ADP Position identifier</td>
@@ -191,9 +193,10 @@
 
           <h2>9. The ADP Schedule Export userscript</h2>
           <p>
-            The optional userscript works the same way but does not connect to Google. It reads your schedule from ADP using your existing session,
-            builds an <code>.ics</code> file in your browser, and downloads it to your device. It stores only your Position identifier and time zone
-            preference in your userscript manager's storage.
+            The optional userscript adds an <b>Export .ics</b> button to Workforce Now and does not connect to Google. When you press it, the
+            userscript reads your schedule from ADP using your existing session, builds an <code>.ics</code> file in your browser, and downloads it
+            to your device. It contacts only <code>workforcenow.adp.com</code>. It stores only your Position identifier and time zone preference
+            in your userscript manager's storage.
           </p>
 
           <h2>10. This website</h2>

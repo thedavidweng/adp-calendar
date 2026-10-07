@@ -45,7 +45,7 @@ Making the Shift Calendar match the Calendar Events in the Schedule Window, from
 _Avoid_: Import, refresh
 
 **Export**:
-Producing an ICS file of Calendar Events for the user to import by hand. It never deletes anything.
+Producing an ICS file of Calendar Events for the user to import by hand. The userscript only exports; the extension both syncs and exports. It never deletes anything.
 _Avoid_: Sync, download
 
 **Schedule Window**:

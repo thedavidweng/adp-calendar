@@ -48,11 +48,8 @@
         <symbol id="i-server" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="7" rx="2" /><rect x="4" y="13" width="16" height="7" rx="2" /><path d="M3 3l18 18" /></symbol>
         <symbol id="i-code" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 7l-5 5 5 5M15 7l5 5-5 5" /></symbol>
         <symbol id="i-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7.5 3v5.5c0 4.5-3.2 8.3-7.5 9.5-4.3-1.2-7.5-5-7.5-9.5V6z" /><path d="M9 12l2 2 4-4" /></symbol>
-        <symbol id="i-history" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 12a8.5 8.5 0 1 0 2.5-6" /><path d="M3.5 4v4h4M12 8v4l3 2" /></symbol>
         <symbol id="i-refresh" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 0 0-14.3-4.3L4 9M4 4v5h5M4 13a8 8 0 0 0 14.3 4.3L20 15M20 20v-5h-5" /></symbol>
         <symbol id="i-list" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6h11M9 12h11M9 18h11M4.5 6h.01M4.5 12h.01M4.5 18h.01" /></symbol>
-        <symbol id="i-globe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5" /><path d="M3.5 12h17M12 3.5c2.5 2.6 3.7 5.4 3.7 8.5s-1.2 5.9-3.7 8.5c-2.5-2.6-3.7-5.4-3.7-8.5S9.5 6.1 12 3.5z" /></symbol>
-        <symbol id="i-bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z" /><path d="M10 20.5a2 2 0 0 0 4 0" /></symbol>
         <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5" /></symbol>
         <symbol id="i-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></symbol>
         <symbol id="i-github" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-3.16 19.49c.5.09.68-.22.68-.48v-1.7c-2.78.6-3.37-1.34-3.37-1.34-.45-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.9 1.52 2.34 1.08 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.94 0-1.09.39-1.98 1.03-2.68-.1-.25-.45-1.27.1-2.64 0 0 .84-.27 2.75 1.02a9.5 9.5 0 0 1 5 0c1.91-1.29 2.75-1.02 2.75-1.02.55 1.37.2 2.39.1 2.64.64.7 1.03 1.59 1.03 2.68 0 3.84-2.34 4.68-4.57 4.93.36.31.68.92.68 1.85v2.74c0 .27.18.58.69.48A10 10 0 0 0 12 2z" /></symbol>
@@ -70,7 +67,8 @@
         <ul class="nav__links">
           <li><a href="#how">How it works</a></li>
           <li><a href="#features">Features</a></li>
-          <li><a href="#privacy">Privacy</a></li>
+          <li><a href="privacy/">Privacy</a></li>
+          <li><a href="#install">Compare</a></li>
           <li><a href="#faq">FAQ</a></li>
         </ul>
         <a class="btn btn--primary btn--sm" href="https://chromewebstore.google.com/detail/adp-shifts/obccfkjmkfhljjnamibiiolagcpmjklj">Get the extension</a>
@@ -171,6 +169,7 @@
                 ADP Shifts
               </div>
               <span class="popup__btn">Sync now</span>
+              <span class="popup__btn popup__btn--ghost">Export .ics</span>
               <p class="popup__meta">Last successful Sync today at 9:41 AM: <b>4 created</b>, 1 updated, 0 restored, 0 deleted.</p>
             </div>
             <div class="shot__fade"></div>
@@ -234,128 +233,33 @@
         <div class="wrap">
           <div class="section__head">
             <div class="kicker">Features</div>
-            <h2>Built to be trusted<br />with your calendar.</h2>
-            <p>Every decision starts from one rule: do exactly one job, and never touch anything that isn't yours to touch.</p>
+            <h2>Does one job.<br />Touches nothing else.</h2>
           </div>
           <div class="bento">
-            <article class="card card--wide">
+            <article class="card">
               <div class="card__icon"><svg aria-hidden="true"><use href="#i-shield" /></svg></div>
-              <h3>One calendar. Nothing else.</h3>
+              <h3>One calendar, nothing else</h3>
               <p>
-                It uses <code>calendar.app.created</code>, the narrowest Calendar permission, plus email access to show which account is connected. It can manage the calendar it
-                created and cannot read, change or delete any of your other calendars.
+                Google grants only <code>calendar.app.created</code>, its narrowest Calendar permission. The extension manages the ADP Shifts
+                calendar and cannot see or change any other.
               </p>
-              <div class="card__visual scope" aria-hidden="true">
-                <div class="scope__row scope__row--yes"><i class="check" style="--c: #2457f5"></i>ADP Shifts<span>Managed</span></div>
-                <div class="scope__row scope__row--no"><i class="check" style="--c: #c4c8d1"></i>Personal<span>No access</span></div>
-                <div class="scope__row scope__row--no"><i class="check" style="--c: #c4c8d1"></i>Work<span>No access</span></div>
-              </div>
-            </article>
-            <article class="card card--wide">
-              <div class="card__icon"><svg aria-hidden="true"><use href="#i-history" /></svg></div>
-              <h3>The past stays the past.</h3>
-              <p>
-                Each Sync creates, updates and removes shifts from today onward to match ADP. Shifts that already happened are history and are
-                never rewritten.
-              </p>
-              <div class="card__visual" aria-hidden="true">
-                <div class="timeline">
-                  <i class="past" style="height: 22px"></i><i class="past" style="height: 34px"></i><i class="past" style="height: 18px"></i
-                  ><i class="past" style="height: 30px"></i><i style="height: 36px"></i><i style="height: 24px"></i><i style="height: 32px"></i
-                  ><i style="height: 20px"></i><i style="height: 36px"></i><i style="height: 28px"></i>
-                </div>
-                <div class="timeline__labels"><span>Frozen history</span><b>Today → 90 days ahead</b></div>
-              </div>
             </article>
             <article class="card">
               <div class="card__icon"><svg aria-hidden="true"><use href="#i-list" /></svg></div>
-              <h3>Events with the details</h3>
-              <p>Department, job, location and pay code come along in each event, plus your employer's holidays.</p>
-              <div class="card__visual" aria-hidden="true">
-                <div class="event-card">
-                  <b>Closing</b>
-                  5:00 – 10:30 PM
-                  <dl>
-                    <dt>Department</dt>
-                    <dd>Front of House</dd>
-                    <dt>Location</dt>
-                    <dd>Store 214</dd>
-                  </dl>
-                </div>
-              </div>
+              <h3>Shifts with the details</h3>
+              <p>
+                Department, job, location and pay code in every event, plus your employer's holidays. Past shifts are never rewritten.
+              </p>
             </article>
             <article class="card">
-              <div class="card__icon"><svg aria-hidden="true"><use href="#i-globe" /></svg></div>
-              <h3>Right time, any zone</h3>
-              <p>Uses your browser's time zone by default. Working somewhere else? Set an override in Settings.</p>
-              <div class="card__visual pills" aria-hidden="true">
-                <span class="pill pill--on">America/Toronto</span>
-                <span class="pill">America/Vancouver</span>
-                <span class="pill">Europe/London</span>
-              </div>
-            </article>
-            <article class="card">
-              <div class="card__icon"><svg aria-hidden="true"><use href="#i-bell" /></svg></div>
-              <h3>One click when ADP logs you out</h3>
-              <p>ADP sessions expire. When one does, you get one notification. Click it, sign in, and the Sync finishes.</p>
-              <div class="card__visual" aria-hidden="true">
-                <div class="toast">
-                  <img src="assets/icon.svg" alt="" />
-                  <div><b>ADP Shifts</b><span>ADP needs you to sign in again</span></div>
-                </div>
-              </div>
+              <div class="card__icon"><svg aria-hidden="true"><use href="#i-lock" /></svg></div>
+              <h3>Private by design</h3>
+              <p>
+                No servers and no analytics. Google access is a short-lived token, and Disconnect erases everything.
+                <a href="privacy/">Privacy policy</a>
+              </p>
             </article>
           </div>
-        </div>
-      </section>
-
-      <section class="section dark" id="privacy">
-        <div class="wrap">
-          <div class="section__head section__head--center">
-            <div class="kicker">Privacy by architecture</div>
-            <h2>Your schedule goes from ADP<br />to your calendar. That's it.</h2>
-            <p>There is no ADP Shifts server. Everything runs inside your browser, so there is nowhere for your data to leak to.</p>
-          </div>
-          <div class="flow">
-            <div class="node">
-              <div class="node__label">Source</div>
-              <div class="node__title">ADP Workforce Now</div>
-              <div class="node__sub">Your existing session</div>
-            </div>
-            <div class="wire" aria-hidden="true"></div>
-            <div class="node node--core">
-              <img src="assets/icon.svg" alt="" />
-              <div class="node__label">On your device</div>
-              <div class="node__title">ADP Shifts extension</div>
-              <div class="node__sub">Reads, normalizes, reconciles</div>
-            </div>
-            <div class="wire wire--2" aria-hidden="true"></div>
-            <div class="node">
-              <div class="node__label">Destination</div>
-              <div class="node__title">Google Calendar</div>
-              <div class="node__sub">Only the ADP Shifts calendar</div>
-            </div>
-          </div>
-          <div class="noserver"><span><s>Our servers</s> There are none.</span></div>
-          <div class="facts">
-            <div class="fact">
-              <h3>Never your password</h3>
-              <p>ADP is called the same way the schedule page calls it, using the session already in your browser.</p>
-            </div>
-            <div class="fact">
-              <h3>No refresh tokens</h3>
-              <p>Google access is a short-lived token kept in local extension storage. No client secret ships in the code.</p>
-            </div>
-            <div class="fact">
-              <h3>No analytics, no ads</h3>
-              <p>No tracking scripts, no telemetry, no data sold or shared. Not in the extension, not on this site.</p>
-            </div>
-            <div class="fact">
-              <h3>One click to erase</h3>
-              <p>Disconnect revokes the Google token and clears everything the extension stored.</p>
-            </div>
-          </div>
-          <p class="dark__more"><a href="privacy/">Read the full privacy policy →</a></p>
         </div>
       </section>
 
@@ -363,17 +267,21 @@
         <div class="wrap">
           <div class="section__head">
             <div class="kicker">Get started</div>
-            <h2>Two ways to get your shifts.</h2>
+            <h2>Two versions.<br />Pick the one that fits.</h2>
+            <p>Both read your schedule the same way and never see your ADP password. The extension keeps a Google Calendar current for you. The userscript only downloads a file.</p>
           </div>
           <div class="install">
             <div class="install__card install__card--main">
-              <span class="badge">Chrome Web Store · Available now</span>
+              <span class="badge">Chrome Web Store · Recommended</span>
               <h3>ADP Shifts for Chrome</h3>
-              <p>Automatic Sync to a dedicated Google Calendar that stays current on its own. Everything described on this page.</p>
+              <p>
+                Automatic Sync to a dedicated Google Calendar that stays current on its own. Everything described on this page, plus
+                <b>Export .ics</b> in the toolbar popup when you want a file.
+              </p>
               <ul class="reqs">
                 <li><svg aria-hidden="true"><use href="#i-check" /></svg>Chrome, Edge, Brave, Arc or any Chromium browser</li>
                 <li><svg aria-hidden="true"><use href="#i-check" /></svg>An ADP Workforce Now account at workforcenow.adp.com</li>
-                <li><svg aria-hidden="true"><use href="#i-check" /></svg>A Google account</li>
+                <li><svg aria-hidden="true"><use href="#i-check" /></svg>A Google account for Sync (not needed for <code>.ics</code>)</li>
               </ul>
               <a class="btn btn--primary" href="https://chromewebstore.google.com/detail/adp-shifts/obccfkjmkfhljjnamibiiolagcpmjklj">
                 <svg aria-hidden="true"><use href="#i-arrow" /></svg>
@@ -381,14 +289,82 @@
               </a>
             </div>
             <div class="install__card">
-              <span class="badge badge--gray">Userscript</span>
-              <h3>Prefer a file?</h3>
+              <span class="badge badge--gray">Greasy Fork · Userscript</span>
+              <h3>ADP Schedule Export</h3>
               <p>
-                The ADP Schedule Export userscript runs in Tampermonkey and downloads your schedule as an <code>.ics</code> file you can import into
-                Apple Calendar, Outlook or anything else. It never deletes anything.
+                Adds an <b>Export .ics</b> button to Workforce Now. One click downloads your schedule as an <code>.ics</code> file for Apple Calendar,
+                Outlook or any other calendar app. No Google account. Works in any browser with Tampermonkey or another userscript manager.
               </p>
-              <a class="btn btn--ghost" href="https://github.com/thedavidweng/adp-calendar/tree/main/packages/userscript">View the userscript</a>
+              <ul class="reqs">
+                <li><svg aria-hidden="true"><use href="#i-check" /></svg>Tampermonkey, Violentmonkey or another userscript manager</li>
+                <li><svg aria-hidden="true"><use href="#i-check" /></svg>An ADP Workforce Now account at workforcenow.adp.com</li>
+              </ul>
+              <a class="btn btn--ghost" href="https://greasyfork.org/scripts/599050-adp-schedule-export">Install from Greasy Fork</a>
             </div>
+          </div>
+          <div class="compare" id="compare">
+            <table>
+              <caption>Extension and userscript, side by side</caption>
+              <thead>
+                <tr>
+                  <th scope="col"><span class="sr-only">Feature</span></th>
+                  <th scope="col">ADP Shifts<span>Chrome extension</span></th>
+                  <th scope="col">ADP Schedule Export<span>Userscript</span></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th scope="row">Get it from</th>
+                  <td>Chrome Web Store</td>
+                  <td>Greasy Fork</td>
+                </tr>
+                <tr>
+                  <th scope="row">Browsers</th>
+                  <td>Chrome, Edge, Brave, Arc and other Chromium browsers</td>
+                  <td>Any browser with a userscript manager, including Firefox and Safari</td>
+                </tr>
+                <tr>
+                  <th scope="row">Sync to Google Calendar</th>
+                  <td><span class="yes">Yes</span>, into its own ADP Shifts calendar</td>
+                  <td><span class="no">No</span></td>
+                </tr>
+                <tr>
+                  <th scope="row">Stays up to date on its own</th>
+                  <td><span class="yes">Yes</span>, checks daily and when you open ADP</td>
+                  <td><span class="no">No</span>, export again when ADP changes</td>
+                </tr>
+                <tr>
+                  <th scope="row">Removes canceled shifts</th>
+                  <td><span class="yes">Yes</span>, on the next Sync</td>
+                  <td><span class="no">No</span>, imported events stay until you delete them</td>
+                </tr>
+                <tr>
+                  <th scope="row">Download an <code>.ics</code> file</th>
+                  <td><span class="yes">Yes</span>, <b>Export .ics</b> in the toolbar popup</td>
+                  <td><span class="yes">Yes</span>, <b>Export .ics</b> button on ADP pages</td>
+                </tr>
+                <tr>
+                  <th scope="row">Google account</th>
+                  <td>Needed for Sync, not for <code>.ics</code></td>
+                  <td>Not used</td>
+                </tr>
+                <tr>
+                  <th scope="row">Setup</th>
+                  <td>Open Calendar in ADP once, connect Google</td>
+                  <td>Open Calendar in ADP once</td>
+                </tr>
+                <tr>
+                  <th scope="row">Time zone override</th>
+                  <td>Extension Settings</td>
+                  <td>Userscript manager menu</td>
+                </tr>
+                <tr>
+                  <th scope="row">Stored on your device</th>
+                  <td>Position, time zone, connected email, calendar ID, short-lived Google token, Sync status</td>
+                  <td>Position and time zone</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </section>
@@ -444,6 +420,14 @@
               </p>
             </details>
             <details>
+              <summary>Can I get an .ics file instead of a Google Calendar?</summary>
+              <p>
+                Yes. In the extension, press <b>Export .ics</b> in the toolbar popup. No Google account is needed for that. Without the extension,
+                the ADP Schedule Export userscript adds the same <b>Export .ics</b> button to Workforce Now. A file is a snapshot: it does not update
+                or remove shifts by itself, so export again when ADP changes. See the <a href="#install">comparison</a>.
+              </p>
+            </details>
+            <details>
               <summary>How do I remove everything?</summary>
               <p>
                 Open the extension's Settings and choose <b>Disconnect and clear data</b>. That revokes Google access and erases all local data.
@@ -485,7 +469,8 @@
               <ul>
                 <li><a href="#how">How it works</a></li>
                 <li><a href="#features">Features</a></li>
-                <li><a href="https://chromewebstore.google.com/detail/adp-shifts/obccfkjmkfhljjnamibiiolagcpmjklj">Install</a></li>
+                <li><a href="https://chromewebstore.google.com/detail/adp-shifts/obccfkjmkfhljjnamibiiolagcpmjklj">Chrome extension</a></li>
+                <li><a href="https://greasyfork.org/scripts/599050-adp-schedule-export">Userscript</a></li>
                 <li><a href="#faq">FAQ</a></li>
               </ul>
             </div>

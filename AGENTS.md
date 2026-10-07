@@ -1,7 +1,7 @@
 # adp-calendar
 
 Chrome extension (Manifest V3) and Tampermonkey userscript that export the logged-in
-employee's ADP Workforce Now schedule to a calendar (ICS first, Google Calendar later).
+employee's ADP Workforce Now schedule to a calendar. The extension syncs to Google Calendar and exports ICS; the userscript exports ICS only.
 
 ## Agent skills
 

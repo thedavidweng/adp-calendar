@@ -48,6 +48,7 @@ WHAT YOU GET
 • Past shifts are never rewritten
 • A time zone override for when you work somewhere else
 • One notification when ADP signs you out. Click it, sign in, and the Sync finishes.
+• Export .ics in the toolbar popup downloads your schedule as a file for Apple Calendar, Outlook or any other calendar app. No Google account needed for that.
 
 PRIVATE BY DESIGN
 • Never asks for your ADP password. It uses the session already in your browser and never copies your cookies.
@@ -68,7 +69,7 @@ ADP Shifts is an independent project. It is not affiliated with, endorsed by, or
 ### Single purpose
 
 ```text
-Copy the signed-in user's own ADP Workforce Now work schedule into a dedicated Google Calendar that the extension creates, and keep that calendar in sync with ADP.
+Copy the signed-in user's own ADP Workforce Now work schedule into a dedicated Google Calendar that the extension creates, and keep that calendar in sync with ADP. The same schedule can also be downloaded as an .ics calendar file.
 ```
 
 ### Permission justifications
