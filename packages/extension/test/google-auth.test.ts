@@ -35,7 +35,7 @@ describe('Google sign-in', () => {
       expect(parsed.searchParams.get('client_id')).toBe(clientId);
       expect(parsed.searchParams.get('response_type')).toBe('token');
       expect(parsed.searchParams.get('redirect_uri')).toBe(redirectUri);
-      expect(parsed.searchParams.get('scope')).toBe('https://www.googleapis.com/auth/calendar.app.created https://www.googleapis.com/auth/userinfo.email');
+      expect(parsed.searchParams.get('scope')).toBe('https://www.googleapis.com/auth/calendar.app.created https://www.googleapis.com/auth/calendar.calendarlist.readonly https://www.googleapis.com/auth/userinfo.email');
       expect(parsed.searchParams.get('client_secret')).toBeNull();
       expect(parsed.searchParams.get('access_type')).toBeNull();
       expect(url).not.toContain('refresh_token');

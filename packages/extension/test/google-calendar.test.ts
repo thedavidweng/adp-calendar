@@ -63,8 +63,67 @@ function memoryIds(initial: string | null = null) {
 }
 
 describe('Google Shift Calendar', () => {
+  it('recovers an existing calendar after local storage is lost, including hidden calendars on later pages', async () => {
+    const { fetchImpl, calls } = mockFetch([
+      { path: '/calendar/v3/users/me/calendarList', status: 200, body: {
+        items: [{ id: 'personal', summary: SHIFT_CALENDAR_NAME }], nextPageToken: 'next',
+      } },
+      { path: '/calendar/v3/users/me/calendarList', status: 200, body: { items: [
+        { id: 'existing', summary: SHIFT_CALENDAR_NAME, description: SHIFT_CALENDAR_DESCRIPTION, timeZone },
+      ] } },
+      { path: '/calendar/v3/calendars/existing', status: 200, body: {
+        id: 'existing', summary: SHIFT_CALENDAR_NAME, description: SHIFT_CALENDAR_DESCRIPTION, timeZone,
+      } },
+      { path: '/calendar/v3/calendars/existing', status: 200, body: {
+        id: 'existing', summary: SHIFT_CALENDAR_NAME, description: SHIFT_CALENDAR_DESCRIPTION, timeZone,
+      } },
+    ]);
+    const ids = memoryIds();
+    const calendar = createGoogleShiftCalendar(fetchImpl, 'token', ids);
+    expect((await calendar.findByName(SHIFT_CALENDAR_NAME))?.id).toBe('existing');
+    expect(ids.value).toBe('existing');
+    expect((await createGoogleShiftCalendar(fetchImpl, 'token', ids).findByName(SHIFT_CALENDAR_NAME))?.id).toBe('existing');
+    expect(new URL(calls[0]!.url).searchParams.get('showHidden')).toBe('true');
+    expect(new URL(calls[0]!.url).searchParams.get('minAccessRole')).toBe('owner');
+    expect(new URL(calls[1]!.url).searchParams.get('pageToken')).toBe('next');
+    expect(calls.every((call) => call.method === 'GET')).toBe(true);
+  });
+
+  it('stops on a lookup permission error instead of treating it as no calendar', async () => {
+    const { fetchImpl } = mockFetch([{ path: '/calendar/v3/users/me/calendarList', status: 403 }]);
+    await expect(createGoogleShiftCalendar(fetchImpl, 'token', memoryIds()).findByName(SHIFT_CALENDAR_NAME))
+      .rejects.toMatchObject({ reason: 'google-auth' });
+  });
+
+  it('chooses the same existing calendar when duplicates are returned in different orders', async () => {
+    for (const order of [['b', 'a'], ['a', 'b']]) {
+      const { fetchImpl, calls } = mockFetch([
+        { path: '/calendar/v3/users/me/calendarList', status: 200, body: { items: order.map((id) => ({
+          id, summary: SHIFT_CALENDAR_NAME, description: SHIFT_CALENDAR_DESCRIPTION, timeZone,
+        })) } },
+        { path: '/calendar/v3/calendars/a', status: 200, body: { id: 'a', summary: SHIFT_CALENDAR_NAME, timeZone } },
+      ]);
+      expect((await createGoogleShiftCalendar(fetchImpl, 'token', memoryIds()).findByName(SHIFT_CALENDAR_NAME))?.id).toBe('a');
+      expect(calls.every((call) => call.method === 'GET')).toBe(true);
+    }
+  });
+
+  it.each([403, 404])('does not adopt or replace a matching calendar that app.created cannot access (%s)', async (status) => {
+    const { fetchImpl } = mockFetch([
+      { path: '/calendar/v3/users/me/calendarList', status: 200, body: { items: [{
+        id: 'unrelated', summary: SHIFT_CALENDAR_NAME, description: SHIFT_CALENDAR_DESCRIPTION,
+      }] } },
+      { path: '/calendar/v3/calendars/unrelated', status },
+    ]);
+    const ids = memoryIds();
+    await expect(createGoogleShiftCalendar(fetchImpl, 'token', ids).findByName(SHIFT_CALENDAR_NAME))
+      .rejects.toMatchObject({ reason: status === 403 ? 'google-auth' : 'calendar-missing' });
+    expect(ids.value).toBeNull();
+  });
+
   it('creates a private calendar and inserts a Shift with local dateTime plus timeZone', async () => {
     const { fetchImpl, calls } = mockFetch([
+      { path: '/calendar/v3/users/me/calendarList', status: 200, body: { items: [] } },
       { path: '/calendar/v3/calendars', status: 200, body: { id: 'cal-1' } },
       { path: '/calendar/v3/calendars/cal-1/events', status: 200, body: { id: 'adpsshiftobj-4' } },
     ]);
@@ -94,24 +153,24 @@ describe('Google Shift Calendar', () => {
     });
     expect(ids.value).toBe('cal-1');
     expect(calls.map((call) => `${call.method} ${new URL(call.url).pathname}`)).toEqual([
+      'GET /calendar/v3/users/me/calendarList',
       'POST /calendar/v3/calendars',
       'POST /calendar/v3/calendars/cal-1/events',
     ]);
     expect(calls.every((call) => call.authorization === 'Bearer ya29.token')).toBe(true);
-    expect(calls[0]?.body).toEqual({
+    expect(calls[1]?.body).toEqual({
       summary: SHIFT_CALENDAR_NAME,
       description: SHIFT_CALENDAR_DESCRIPTION,
       timeZone,
     });
-    expect(calls[1]?.body).toEqual({
+    expect(calls[2]?.body).toEqual({
       id: 'adpsshiftobj-4',
       summary: 'Shift',
       start: { dateTime: '2026-10-05T17:00:00', timeZone },
       end: { dateTime: '2026-10-05T22:30:00', timeZone },
     });
     expect(JSON.stringify(calls)).not.toContain('/acl');
-    expect(JSON.stringify(calls)).not.toContain('calendarList');
-    expect(JSON.stringify(calls[1]?.body)).not.toMatch(/Z"|[+-]\d{2}:\d{2}/);
+    expect(JSON.stringify(calls[2]?.body)).not.toMatch(/Z"|[+-]\d{2}:\d{2}/);
   });
 
   it('finds the remembered Shift Calendar by id without listing calendars', async () => {
@@ -134,7 +193,10 @@ describe('Google Shift Calendar', () => {
   });
 
   it('forgets a remembered Shift Calendar that the user deleted', async () => {
-    const { fetchImpl } = mockFetch([{ path: '/calendar/v3/calendars/gone', status: 404, body: {} }]);
+    const { fetchImpl } = mockFetch([
+      { path: '/calendar/v3/calendars/gone', status: 404, body: {} },
+      { path: '/calendar/v3/users/me/calendarList', status: 200, body: { items: [] } },
+    ]);
     const ids = memoryIds('gone');
     const calendar = createGoogleShiftCalendar(fetchImpl, 'ya29.token', ids);
     await expect(calendar.findByName(SHIFT_CALENDAR_NAME)).resolves.toBeNull();

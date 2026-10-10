@@ -52,7 +52,7 @@ WHAT YOU GET
 
 PRIVATE BY DESIGN
 • Never asks for your ADP password. It uses the session already in your browser and never copies your cookies.
-• Uses Google's narrowest Calendar permission (calendar.app.created). It can manage only the calendar it creates and cannot see or change your other calendars.
+• Manages only calendars it creates (calendar.app.created). Read-only calendar-list access finds its existing calendar after reconnecting or reinstalling; it cannot read or change events in your other calendars.
 • Reads your Google email only to identify the connected account in setup.
 • No servers. Your schedule goes from ADP to Google directly from your browser.
 • No analytics, no ads, no tracking. Nothing is sold or shared.

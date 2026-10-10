@@ -240,8 +240,8 @@
               <div class="card__icon"><svg aria-hidden="true"><use href="#i-shield" /></svg></div>
               <h3>One calendar, nothing else</h3>
               <p>
-                Google grants only <code>calendar.app.created</code>, its narrowest Calendar permission. The extension manages the ADP Shifts
-                calendar and cannot see or change any other.
+                The extension manages only calendars it creates with <code>calendar.app.created</code>.
+                Read-only calendar-list access lets it find and reuse ADP Shifts after reconnecting or reinstalling, without reading other calendars' events.
               </p>
             </article>
             <article class="card">
@@ -387,8 +387,8 @@
             <details>
               <summary>Can it see or change my other calendars?</summary>
               <p>
-                No. Google grants it the <code>calendar.app.created</code> scope only, which limits access to calendars the extension itself created.
-                Your personal, work and shared calendars are out of reach.
+                It can read calendar-list metadata to find its existing ADP Shifts calendar.
+                Google limits event access to calendars the extension itself created, so it cannot read or change events in your other calendars.
               </p>
             </details>
             <details>

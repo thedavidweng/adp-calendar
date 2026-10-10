@@ -146,7 +146,7 @@
     "message": "Connect Google"
   },
   "connectGoogleBody": {
-    "message": "Choose the Google account where you want your shifts. ADP Shifts can manage only calendars it creates, and reads your email so you can check which account is connected."
+    "message": "Choose the Google account where you want your shifts. ADP Shifts reads your calendar list to reuse its existing calendar, manages only calendars it creates, and reads your email so you can check which account is connected."
   },
   "connectGoogle": {
     "message": "Connect Google"

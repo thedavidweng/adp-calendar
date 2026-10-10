@@ -44,7 +44,7 @@
               <li>ADP Shifts runs entirely in your browser. There is no ADP Shifts server, account, or database.</li>
               <li>It reads your own schedule from ADP Workforce Now and writes it to one Google calendar that it creates.</li>
               <li>It never sees your ADP password and never reads, copies, or stores your ADP cookies.</li>
-              <li>It cannot read or change your other Google calendars.</li>
+              <li>It reads your calendar list to find ADP Shifts, but cannot read or change events in your other Google calendars.</li>
               <li>No analytics, no advertising, no selling or sharing of data. The developer never receives your data.</li>
             </ul>
           </section>
@@ -122,8 +122,9 @@
           <h2>4. Google user data</h2>
           <p>
             The extension requests the Google Calendar permission: <code>https://www.googleapis.com/auth/calendar.app.created</code>. This scope lets an app
-            create secondary calendars and manage only the calendars and events it created. It does not allow access to your primary calendar or
-            to any other calendar in your account.
+            create secondary calendars and manage only the calendars and events it created.
+            It also requests <code>https://www.googleapis.com/auth/calendar.calendarlist.readonly</code> to read calendar-list metadata
+            and recover its existing ADP Shifts calendar after reconnecting or reinstalling. This does not grant access to other calendars' events.
           </p>
           <p>
             It also requests <code>https://www.googleapis.com/auth/userinfo.email</code> to show the connected account's email address and

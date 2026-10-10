@@ -1,4 +1,5 @@
 export const GOOGLE_CALENDAR_SCOPE = 'https://www.googleapis.com/auth/calendar.app.created';
+export const GOOGLE_CALENDAR_LIST_SCOPE = 'https://www.googleapis.com/auth/calendar.calendarlist.readonly';
 
 export const GOOGLE_EMAIL_SCOPE = 'https://www.googleapis.com/auth/userinfo.email';
 
@@ -22,7 +23,7 @@ export function buildAuthUrl(input: { clientId: string; redirectUri: string; int
   url.searchParams.set('client_id', input.clientId);
   url.searchParams.set('response_type', 'token');
   url.searchParams.set('redirect_uri', input.redirectUri);
-  url.searchParams.set('scope', `${GOOGLE_CALENDAR_SCOPE} ${GOOGLE_EMAIL_SCOPE}`);
+  url.searchParams.set('scope', `${GOOGLE_CALENDAR_SCOPE} ${GOOGLE_CALENDAR_LIST_SCOPE} ${GOOGLE_EMAIL_SCOPE}`);
   if (input.email) url.searchParams.set('login_hint', input.email);
   if (!input.interactive) {
     url.searchParams.set('prompt', 'none');

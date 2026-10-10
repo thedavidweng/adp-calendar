@@ -1,6 +1,6 @@
 # Google OAuth verification
 
-`calendar.app.created` is **non-sensitive**, as confirmed in Google Auth Platform's Data Access page on 2026-10-04 (ADR 0003). Publish the OAuth app to Production so users beyond the test-user list can connect. The app logo requires branding verification; this scope does not require sensitive-scope verification or a demo video.
+`calendar.app.created` and `calendar.calendarlist.readonly` are **non-sensitive**, as confirmed in Google Auth Platform's Data Access page (calendar-list scope added on 2026-10-09; ADR 0003). Publish the OAuth app to Production so users beyond the test-user list can connect. The app logo requires branding verification.
 
 ## 1. Own the domain
 
@@ -35,22 +35,22 @@ The homepage already meets Google's homepage rules: it describes what the app do
 
 ## 4. Data access (scopes)
 
-Add `https://www.googleapis.com/auth/calendar.app.created` and `https://www.googleapis.com/auth/userinfo.email`.
+Add `https://www.googleapis.com/auth/calendar.app.created`, `https://www.googleapis.com/auth/calendar.calendarlist.readonly`, and `https://www.googleapis.com/auth/userinfo.email`.
 The email scope displays the connected account and pins silent renewal to it; it does not provide Gmail access.
 
 Scope justification:
 
 ```text
-ADP Shifts copies the user's ADP Workforce Now work schedule into Google Calendar. It needs to create one secondary calendar named "ADP Shifts" and then create, update, and delete the events in that calendar so it matches the user's schedule. calendar.app.created is the narrowest scope that allows this: the app cannot read or modify the user's primary calendar or any calendar it did not create. All processing happens in the user's browser; no data is sent to any server we operate.
+ADP Shifts copies the user's ADP Workforce Now work schedule into Google Calendar. calendar.app.created allows it to create and manage its own secondary calendar. calendar.calendarlist.readonly lets it recover that calendar after reconnecting or reinstalling, avoiding duplicates. It cannot read or modify events in calendars it did not create. All processing happens in the user's browser; no data is sent to any server we operate.
 ```
 
 ## 5. Optional demo video
 
-A video is not required for this non-sensitive scope. If Google or the store reviewer specifically requests a demonstration, record an unlisted video (two to three minutes). Show, in order:
+If verification of the added scope or the store reviewer requires a demonstration, record an unlisted video (two to three minutes). Show, in order:
 
 1. The extension installed in Chrome, with the setup page open.
 2. Signing in to ADP Workforce Now and opening Calendar. The setup page shows "Position captured."
-3. Clicking **Connect Google**. Pause on the consent screen so the browser address bar shows the OAuth `client_id`, and the scope list shows secondary-calendar permission and email access.
+3. Clicking **Connect Google**. Pause on the consent screen so the browser address bar shows the OAuth `client_id`, and the scope list shows secondary-calendar permission, read-only calendar-list access, and email access.
 4. Clicking **Sync now**. Switch to Google Calendar and show the new "ADP Shifts" calendar with the synced shifts, and that other calendars are unchanged.
 5. Opening one event to show the details.
 6. Settings › **Disconnect and clear data**, then the app gone from https://myaccount.google.com/permissions.
