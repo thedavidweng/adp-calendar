@@ -19,13 +19,16 @@ concurrency:
 
 jobs:
   deploy:
+    timeout-minutes: 60
     runs-on: ubuntu-latest
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - uses: actions/checkout@v5
-      - uses: actions/configure-pages@v5
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
       # Pages serves every file with a fixed 10-minute cache, so a content hash in the
       # stylesheet URL keeps new HTML from rendering with a stale site.css.
       - name: Version stylesheet links
@@ -33,8 +36,9 @@ jobs:
           v=$(sha256sum site/assets/site.css | cut -c1-10)
           sed -i "s#assets/site.css\"#assets/site.css?v=$v\"#" site/*.html site/*/index.html
           ! grep -rL "site.css?v=$v" site/*.html site/*/index.html | grep .
-      - uses: actions/upload-pages-artifact@v4
+        shell: bash
+      - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         with:
           path: site
       - id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
