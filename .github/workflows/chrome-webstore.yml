@@ -11,8 +11,7 @@ on:
   push:
     tags: ['v*']
 
-permissions:
-  contents: write
+permissions: {}
 
 concurrency:
   group: chrome-webstore
@@ -20,6 +19,8 @@ concurrency:
 
 jobs:
   release:
+    permissions:
+      contents: write
     timeout-minutes: 60
     runs-on: ubuntu-latest
     env:
