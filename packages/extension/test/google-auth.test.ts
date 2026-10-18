@@ -25,6 +25,17 @@ function memoryTokens(initial?: { accessToken: string; expiresAt: number }): Tok
 }
 
 describe('Google sign-in', () => {
+  it('uses the requested token lifetime and defaults when Google omits it', () => {
+    expect(readAccessToken(`${redirectUri}#expires_in=90&access_token=abc`, 1_000)).toEqual({
+      accessToken: 'abc',
+      expiresAt: 91_000,
+    });
+    expect(readAccessToken(`${redirectUri}#access_token=token`, 1_000)).toEqual({
+      accessToken: 'token',
+      expiresAt: 3_601_000,
+    });
+  });
+
   it('asks for the app-created calendar scope with an implicit token and no secret', () => {
     const silent = buildAuthUrl({ clientId, redirectUri, interactive: false });
     const interactive = buildAuthUrl({ clientId, redirectUri, interactive: true });
