@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import type { ShiftCalendar, StateStore, SyncDiagnostics } from '@adp-calendar/core';
+import type { ShiftCalendar, ShiftCalendarEvent, StateStore, SyncDiagnostics } from '@adp-calendar/core';
 import { ShiftCalendarError } from '@adp-calendar/core';
 import { describe, expect, it } from 'vitest';
 import { SIGN_IN_NOTIFICATION_ID } from '../src/reauth.ts';
@@ -199,6 +199,82 @@ describe('popup Sync outcomes', () => {
 });
 
 describe('extension Sync entry', () => {
+  it('authorizes the first Sync and creates the private Shift Calendar', async () => {
+    const launches: Array<{ interactive: boolean; url: string }> = [];
+    const saved: Array<{ accessToken: string; expiresAt: number; email?: string }> = [];
+    const inserted: ShiftCalendarEvent[] = [];
+    let created: { name: string; description: string; timeZone: string; private: true } | null = null;
+
+    const result = await runExtensionSync({
+      clientId: 'client.apps.googleusercontent.com',
+      redirectUri: 'https://abcdefghijklmnop.chromiumapp.org/',
+      now: () => new Date(now),
+      tokens: {
+        async load() {
+          return saved.at(-1) ?? null;
+        },
+        async save(token) {
+          saved.push(token);
+        },
+        async clear() {},
+      },
+      readEmail: async () => 'employee@example.test',
+      launch: async (url, interactive) => {
+        launches.push({ url, interactive });
+        return interactive
+          ? 'https://abcdefghijklmnop.chromiumapp.org/#access_token=first-sync&expires_in=3600'
+          : null;
+      },
+      state: state('POS-0001'),
+      history: { async getLastSuccess() { return null; }, async setLastSuccess() {} },
+      diagnostics: diagnostics(),
+      adp: { async fetchMonthlyView() { return { kind: 'json', body: october }; } },
+      timeZone: 'America/Vancouver',
+      openCalendar() {
+        return {
+          async findByName() {
+            return null;
+          },
+          async create(input) {
+            created = input;
+            return { id: 'cal-1', ...input };
+          },
+          async list() {
+            return [];
+          },
+          async insert(_calendarId, event) {
+            inserted.push(event);
+          },
+          async update() {},
+          async delete() {},
+        };
+      },
+      forced: true,
+    });
+
+    expect(result).toMatchObject({
+      ok: true,
+      calendarId: 'cal-1',
+      createdCalendar: true,
+      created: 5,
+    });
+    expect(launches.map(({ interactive }) => interactive)).toEqual([false, true]);
+    expect(saved).toHaveLength(1);
+    expect(created).toEqual({
+      name: 'ADP Shifts',
+      description: "Managed automatically, don't edit",
+      timeZone: 'America/Vancouver',
+      private: true,
+    });
+    expect(inserted.map((event) => event.id)).toEqual([
+      'adpsshiftobj-4',
+      'adpsshiftobj-5',
+      'adpsshiftobj-6',
+      'adpsshiftobj-7',
+      'adph20261012',
+    ]);
+  });
+
   it('does not open the Shift Calendar for no schedule, an invalid Position, shape drift, or any other ADP error', async () => {
     const drifted = structuredClone(october) as { data: { details: Array<Record<string, unknown>> } };
     delete drifted.data.details[0]?.shiftDefinitions;
