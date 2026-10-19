@@ -16,6 +16,7 @@ export type {
   ExportInput,
   ExportResult,
   LastSuccess,
+  ListedShiftCalendarEvent,
   NewShiftCalendar,
   ShiftCalendar,
   ShiftCalendarEvent,

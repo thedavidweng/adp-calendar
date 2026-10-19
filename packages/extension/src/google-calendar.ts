@@ -1,5 +1,6 @@
 import {
   addDays,
+  type ListedShiftCalendarEvent,
   type ShiftCalendar,
   type ShiftCalendarEvent,
   type ShiftCalendarRecord,
@@ -106,7 +107,7 @@ export function createGoogleShiftCalendar(
       return record(body.id, calendar.name, calendar.description, calendar.timeZone);
     },
     async list(calendarId, range) {
-      const events: ShiftCalendarEvent[] = [];
+      const events: ListedShiftCalendarEvent[] = [];
       let pageToken: string | undefined;
       do {
         const params = new URLSearchParams({
@@ -182,8 +183,14 @@ function toPayload(event: ShiftCalendarEvent, mode: 'insert' | 'update'): Record
   return payload;
 }
 
-function readEvent(item: GoogleEvent, fallbackZone: string): ShiftCalendarEvent {
-  if (!item.id || !item.start || !item.end) {
+function readEvent(item: GoogleEvent, fallbackZone: string): ListedShiftCalendarEvent {
+  if (!item.id) {
+    throw new ShiftCalendarError('google-error');
+  }
+  if (item.status === 'cancelled') {
+    return { id: item.id, status: 'cancelled' };
+  }
+  if (!item.start || !item.end) {
     throw new ShiftCalendarError('google-error');
   }
   const transparency =
@@ -195,7 +202,7 @@ function readEvent(item: GoogleEvent, fallbackZone: string): ShiftCalendarEvent 
     start: readWhen(item.start, fallbackZone),
     end: readWhen(item.end, fallbackZone),
     ...(transparency ? { transparency } : {}),
-    status: item.status === 'cancelled' ? 'cancelled' : 'confirmed',
+    status: 'confirmed',
   };
 }
 
