@@ -576,6 +576,23 @@ describe('Shift Calendar reconciliation', () => {
     expect(calendar.writes).toEqual([{ op: 'update', id: 'adpsshiftobj-6' }]);
   });
 
+  it('restores only desired future shifts from ID-only tombstones', async () => {
+    const calendar = memoryCalendar();
+    await syncSchedule(syncInput(calendar));
+    calendar.writes.length = 0;
+    const list = calendar.list.bind(calendar);
+    calendar.list = async (...args) => [
+      ...(await list(...args)).filter((item) => item.id !== 'adpsshiftobj-5'),
+      { id: 'adpsshiftobj-5', status: 'cancelled' },
+      { id: 'past-or-removed', status: 'cancelled' },
+    ];
+
+    const result = await syncSchedule(syncInput(calendar));
+
+    expect(result).toMatchObject({ ok: true, created: 0, updated: 0, restored: 1, deleted: 0 });
+    expect(calendar.writes).toEqual([{ op: 'update', id: 'adpsshiftobj-5' }]);
+  });
+
   it('leaves events that start before today untouched when the window rolls forward', async () => {
     const calendar = memoryCalendar();
     await syncSchedule(syncInput(calendar));

@@ -103,6 +103,8 @@ export interface ShiftCalendarEvent {
   status?: 'confirmed' | 'cancelled';
 }
 
+export type ListedShiftCalendarEvent = ShiftCalendarEvent | { id: string; status: 'cancelled' };
+
 export interface ShiftCalendarRange {
   /** Inclusive local dates. Events that only overlap this range are included. */
   startDate: string;
@@ -128,7 +130,7 @@ export interface ShiftCalendarRecord {
 export interface ShiftCalendar {
   findByName(name: string): Promise<ShiftCalendarRecord | null>;
   create(calendar: NewShiftCalendar): Promise<ShiftCalendarRecord>;
-  list(calendarId: string, range: ShiftCalendarRange): Promise<ShiftCalendarEvent[]>;
+  list(calendarId: string, range: ShiftCalendarRange): Promise<ListedShiftCalendarEvent[]>;
   insert(calendarId: string, event: ShiftCalendarEvent): Promise<void>;
   update(calendarId: string, event: ShiftCalendarEvent): Promise<void>;
   delete(calendarId: string, eventId: string): Promise<void>;

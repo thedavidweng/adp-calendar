@@ -143,22 +143,25 @@ async function reconcile(
   const counts: SyncSummary = { created: 0, updated: 0, restored: 0, deleted: 0 };
 
   for (const event of listed) {
-    if (startDate(event) < today) {
-      continue;
-    }
     const want = wanted.get(event.id);
-    if (!want) {
-      if (event.status !== 'cancelled') {
-        await input.calendar.delete(calendarId, event.id);
-        counts.deleted += 1;
+    if (event.status === 'cancelled') {
+      if (want) {
+        seen.add(event.id);
+        await input.calendar.update(calendarId, want);
+        counts.restored += 1;
       }
       continue;
     }
+    if (startDate(event) < today) {
+      continue;
+    }
+    if (!want) {
+      await input.calendar.delete(calendarId, event.id);
+      counts.deleted += 1;
+      continue;
+    }
     seen.add(event.id);
-    if (event.status === 'cancelled') {
-      await input.calendar.update(calendarId, want);
-      counts.restored += 1;
-    } else if (!sameEvent(event, want)) {
+    if (!sameEvent(event, want)) {
       await input.calendar.update(calendarId, want);
       counts.updated += 1;
     }

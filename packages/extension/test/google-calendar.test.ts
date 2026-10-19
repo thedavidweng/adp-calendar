@@ -213,9 +213,6 @@ describe('Google Shift Calendar', () => {
             {
               id: 'adpsshiftobj-4',
               status: 'cancelled',
-              summary: 'Shift',
-              start: { dateTime: '2026-10-05T17:00:00-07:00', timeZone },
-              end: { dateTime: '2026-10-06T05:30:00Z', timeZone },
             },
             {
               id: 'adph20261012',
@@ -241,10 +238,7 @@ describe('Google Shift Calendar', () => {
     ).resolves.toEqual([
       {
         id: 'adpsshiftobj-4',
-        title: 'Shift',
         status: 'cancelled',
-        start: { dateTime: '2026-10-05T17:00:00', timeZone },
-        end: { dateTime: '2026-10-05T22:30:00', timeZone },
       },
       {
         id: 'adph20261012',
