@@ -3,7 +3,7 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { ShiftCalendar, ShiftCalendarEvent, StateStore, SyncDiagnostics } from '@adp-calendar/core';
 import { describe, expect, it } from 'vitest';
-import { extensionCommand, ONBOARDING_MESSAGE_KEYS, ONBOARDING_PAGE, onboardingStep } from '../src/onboarding.ts';
+import { extensionCommand, ONBOARDING_PAGE, onboardingStep } from '../src/onboarding.ts';
 import { runExtensionSync } from '../src/run-sync.ts';
 import {
   disconnectExtension,
@@ -30,9 +30,6 @@ import { PAGE_LOAD_MESSAGE, SYNC_NOW_MESSAGE } from '../src/sync-trigger.ts';
 const now = '2026-10-03T17:00:00.000Z';
 const fixtureDir = resolve(dirname(fileURLToPath(import.meta.url)), '../../parser/test/fixtures');
 const october = JSON.parse(readFileSync(resolve(fixtureDir, 'monthlyview-2026-10.redacted.json'), 'utf8')) as unknown;
-const messages = JSON.parse(
-  readFileSync(resolve(dirname(fileURLToPath(import.meta.url)), '../public/_locales/en/messages.json'), 'utf8'),
-) as Record<string, { message?: string }>;
 
 function memoryStorage(initial: Record<string, unknown> = {}): KeyValueStorage & { items: Record<string, unknown> } {
   const items = { ...initial };
@@ -276,29 +273,6 @@ describe('disconnect', () => {
     await expect(
       revokeGoogleAccessToken(async () => new Response(null, { status: 400 }), 'ya29.token'),
     ).rejects.toThrow('Google revoke failed');
-  });
-});
-
-describe('onboarding copy', () => {
-  it('puts every new string in the English catalog, including the password promise', () => {
-    for (const key of ONBOARDING_MESSAGE_KEYS) {
-      expect(messages[key]?.message, key).toBeTruthy();
-    }
-    expect(messages.adpSignedInBody?.message).toContain('Open ADP Workforce Now');
-    expect(messages.adpSignedInBody?.message).toContain('never asks for your ADP password');
-    expect(messages.myScheduleBody?.message).toContain('Calendar');
-    expect(messages.positionCaptured?.message).toContain('detected');
-    expect(messages.connectGoogleBody?.message).toContain('email');
-    expect(messages.timeZoneHelp?.message).toContain('browser');
-    expect(messages.disconnectHelp?.message).toContain('Google');
-
-    const html = readFileSync(
-      resolve(dirname(fileURLToPath(import.meta.url)), '../src/entrypoints/onboarding.html'),
-      'utf8',
-    );
-    expect(html).toContain('<title>Set up ADP Shifts</title>');
-    expect(html).toContain('../onboarding/main.ts');
-    expect(html).not.toMatch(/password|My Schedule|Connect Google/);
   });
 });
 

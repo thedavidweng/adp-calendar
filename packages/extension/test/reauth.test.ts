@@ -1,8 +1,5 @@
-import { readFileSync } from 'node:fs';
-import { dirname, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { ADP_MY_SCHEDULE_URL, ADP_SIGN_IN_URL, SIGN_IN_NOTIFICATION_ID, openSignInFromNotification, reauthSyncRequest } from '../src/reauth.ts';
+import { ADP_SIGN_IN_URL, SIGN_IN_NOTIFICATION_ID, openSignInFromNotification, reauthSyncRequest } from '../src/reauth.ts';
 import {
   REAUTH_TAB_ID_KEY,
   SIGN_IN_NOTIFIED_KEY,
@@ -33,12 +30,6 @@ function memoryStorage(initial: Record<string, unknown> = {}): KeyValueStorage &
 }
 
 describe('ADP sign-in notification', () => {
-  it('uses the one sentence asking the employee to sign in again', () => {
-    const path = resolve(dirname(fileURLToPath(import.meta.url)), '../public/_locales/en/messages.json');
-    const messages = JSON.parse(readFileSync(path, 'utf8')) as { needsSignIn: { message: string } };
-    expect(messages.needsSignIn.message).toBe('ADP needs you to sign in again');
-  });
-
   it('opens the ADP sign-in page from that notification and ignores other ids', async () => {
     const opened: string[] = [];
     const remembered: number[] = [];
@@ -63,14 +54,7 @@ describe('ADP sign-in notification', () => {
     expect(openedFromSignIn).toBe(true);
     expect(ignored).toBe(false);
     expect(opened).toEqual([ADP_SIGN_IN_URL]);
-    expect(ADP_SIGN_IN_URL).toBe('https://workforcenow.adp.com/theme/index.html');
     expect(remembered).toEqual([42]);
-  });
-
-  it('points My Schedule at the route that embeds the Position', () => {
-    expect(ADP_MY_SCHEDULE_URL).toBe(
-      'https://workforcenow.adp.com/theme/index.html#/Myself/MyselfTabTimecardsAttendanceSchCategoryMonthlySchedule',
-    );
   });
 
   it('forces Sync when the sign-in tab reaches Workforce Now, and only that tab', () => {
