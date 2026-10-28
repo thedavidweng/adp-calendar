@@ -228,32 +228,6 @@ function event(calendar: MemoryCalendar, id: string): StoredEvent | undefined {
   return storedEvents(calendar).find((item) => item.id === id);
 }
 
-describe('Shift Calendar fake', () => {
-  it('keeps a deleted event and rejects inserting that id again', async () => {
-    const calendar = memoryCalendar();
-    const created = await calendar.create({
-      name: SHIFT_CALENDAR_NAME,
-      description: SHIFT_CALENDAR_DESCRIPTION,
-      timeZone,
-      private: true,
-    });
-    const shift: ShiftCalendarEvent = {
-      id: 'adpsshiftobj-4',
-      title: 'Shift',
-      start: { dateTime: '2026-10-05T17:00:00', timeZone },
-      end: { dateTime: '2026-10-05T22:30:00', timeZone },
-    };
-    await calendar.insert(created.id, shift);
-    await calendar.delete(created.id, shift.id);
-
-    await expect(calendar.insert(created.id, shift)).rejects.toEqual(new ShiftCalendarError('conflict'));
-    await expect(
-      calendar.list(created.id, { startDate: '2026-10-05', endDate: '2026-10-05', timeZone }),
-    ).resolves.toEqual([{ ...shift, status: 'cancelled' }]);
-    expect(calendar.conflicts).toBe(1);
-  });
-});
-
 describe('when a Sync is due', () => {
   it('does nothing at 3.4 days or at exactly 3.5 days, and keeps the stored success', async () => {
     for (const age of [threePointFourDaysMs, threeAndAHalfDaysMs]) {

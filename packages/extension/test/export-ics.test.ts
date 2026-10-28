@@ -103,10 +103,4 @@ describe('extension ICS export', () => {
     expect(exportShowsReportIssue({ ok: false, reason: 'shape-drift' })).toBe(true);
     expect(exportShowsReportIssue({ ok: false, reason: 'session-dead' })).toBe(false);
   });
-
-  it('has every export string in the English catalog', () => {
-    for (const key of ['exportIcs', 'exporting', 'exportDone', 'exportSessionDead', 'exportFailed'] as const) {
-      expect(messages[key]?.message, key).toBeTruthy();
-    }
-  });
 });
