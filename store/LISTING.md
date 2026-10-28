@@ -7,7 +7,7 @@ Copy-paste source for every field in the [Developer Dashboard](https://chrome.go
 Build the upload zip. The store build omits the manifest `key` (the store assigns its own extension ID and rejects a `key`):
 
 ```sh
-WXT_GOOGLE_OAUTH_CLIENT_ID=<client-id>.apps.googleusercontent.com pnpm --filter @adp-calendar/extension zip:store
+WXT_GOOGLE_OAUTH_CLIENT_ID=<client-id>.apps.googleusercontent.com bun run zip:extension
 # -> packages/extension/.output/adp-shifts-<version>-chrome.zip
 ```
 
