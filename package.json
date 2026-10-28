@@ -2,18 +2,17 @@
   "name": "adp-calendar",
   "private": true,
   "type": "module",
-  "packageManager": "pnpm@12.9.0",
   "engines": {
     "node": ">=22"
   },
   "scripts": {
     "test": "vitest run",
-    "typecheck": "tsc --noEmit && pnpm --filter @adp-calendar/extension typecheck",
-    "type-check": "tsc --noEmit && pnpm --filter @adp-calendar/extension typecheck",
-    "build": "pnpm -r --if-present build",
-    "build:extension": "pnpm --filter @adp-calendar/extension build",
-    "build:userscript": "pnpm --filter @adp-calendar/userscript build",
-    "zip:extension": "pnpm --filter @adp-calendar/extension zip:store",
+    "typecheck": "tsc --noEmit && bun run --cwd packages/extension typecheck",
+    "type-check": "tsc --noEmit && bun run --cwd packages/extension typecheck",
+    "build": "bun run --filter \"@adp-calendar/*\" --if-present build",
+    "build:extension": "bun run --cwd packages/extension build",
+    "build:userscript": "bun run --cwd packages/userscript build",
+    "zip:extension": "bun run --cwd packages/extension zip:store",
     "store:upload": "chrome-webstore-upload upload --source packages/extension/.output/chrome-mv3",
     "store:publish": "chrome-webstore-upload publish",
     "store:status": "node scripts/store-status.mjs"
@@ -23,5 +22,10 @@
     "chrome-webstore-upload-cli": "4.0.2",
     "typescript": "^7.0.2",
     "vitest": "^5.0.5"
-  }
+  },
+  "workspaces": [
+    "packages/core",
+    "packages/userscript",
+    "packages/extension"
+  ]
 }

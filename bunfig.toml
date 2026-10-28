@@ -1,0 +1,3 @@
+[install]
+minimumReleaseAge = 86400
+minimumReleaseAgeExcludes = ["chrome-webstore-upload-cli@4.0.2"]

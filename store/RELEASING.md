@@ -42,11 +42,11 @@ already occupied. Do not commit credential files or export tokens to terminal lo
 Local commands, with the publisher credentials provided by your secret manager:
 
 ```sh
-pnpm zip:extension
+bun run zip:extension
 EXTENSION_ID=obccfkjmkfhljjnamibiiolagcpmjklj \
-PUBLISHER_ID=f5afb768-56ba-4b77-b399-60e85312ad0e pnpm store:upload
+PUBLISHER_ID=f5afb768-56ba-4b77-b399-60e85312ad0e bun run store:upload
 EXTENSION_ID=obccfkjmkfhljjnamibiiolagcpmjklj \
-PUBLISHER_ID=f5afb768-56ba-4b77-b399-60e85312ad0e pnpm store:publish
+PUBLISHER_ID=f5afb768-56ba-4b77-b399-60e85312ad0e bun run store:publish
 ```
 
 For local builds the Calendar client ID is in the ignored

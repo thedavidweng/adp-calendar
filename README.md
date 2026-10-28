@@ -40,12 +40,12 @@ There are two versions. Both read your own schedule with the ADP session already
 ## Develop
 
 ```sh
-pnpm install
-pnpm test
-pnpm typecheck
-pnpm build:extension      # packages/extension/.output/chrome-mv3
-pnpm build:userscript     # packages/userscript/dist/adp-schedule-export.user.js
-pnpm --filter @adp-calendar/extension zip:store
+bun install
+bun run test
+bun run typecheck
+bun run build:extension      # packages/extension/.output/chrome-mv3
+bun run build:userscript     # packages/userscript/dist/adp-schedule-export.user.js
+bun run zip:extension
 python3 store/render.py   # regenerate store images and the social card
 ```
 
