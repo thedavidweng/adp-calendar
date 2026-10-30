@@ -3,7 +3,7 @@
   --ink: #0b0c0e;
   --text: #2a2e37;
   --muted: #5d6474;
-  --faint: #8c93a3;
+  --faint: #687080;
   --line: #e7e9ee;
   --line-strong: #d9dce3;
   --surface: #ffffff;
@@ -12,7 +12,7 @@
   --accent-deep: #1a47d6;
   --accent-soft: #edf2ff;
   --accent-ink: #1638a8;
-  --green: #128a4a;
+  --green: #107a40;
   --radius-s: 10px;
   --radius: 16px;
   --radius-l: 24px;
@@ -1741,7 +1741,7 @@ code {
   gap: 64px;
 }
 
-.footer__col h4 {
+.footer__col h2 {
   margin-bottom: 14px;
   color: var(--ink);
   font-size: 13px;
@@ -2118,3 +2118,5 @@ code {
     padding: 0;
   }
 }
+
+.footer__legal a, p a { text-decoration: underline; text-underline-offset: 0.15em; }
